@@ -1,0 +1,13 @@
+.root {
+  -fx-font: 18 "Eras Demi ITC";
+}
+
+
+.view-title{
+  -fx-font-size: 40;
+  -fx-font-family: "Eras Bold ITC";
+}
+
+.text-bold{
+  -fx-font-family: "Eras Bold ITC";
+}
