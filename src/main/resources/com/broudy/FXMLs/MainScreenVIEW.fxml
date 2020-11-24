@@ -12,7 +12,7 @@
    <children>
       <VBox alignment="CENTER" layoutX="179.0" layoutY="100.0" spacing="30.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
-            <Label styleClass="view-title" text="DNA Sequence(s) Selection" VBox.vgrow="NEVER" />
+            <Label styleClass="view-title" text="DNA Sequence(s) Selector" VBox.vgrow="NEVER" />
             <VBox spacing="5.0">
                <children>
                   <Label styleClass="text-bold" text="Select DNA sequences you wish to analyze:" wrapText="true">
@@ -29,7 +29,7 @@
                   <VBox spacing="5.0" HBox.hgrow="ALWAYS">
                      <children>
                         <Label text="Database files:" />
-                        <ListView fx:id="databaseLV" VBox.vgrow="ALWAYS">
+                        <ListView fx:id="databaseLV" styleClass="text-14" VBox.vgrow="ALWAYS">
                            <VBox.margin>
                               <Insets />
                            </VBox.margin>
@@ -43,7 +43,7 @@
                   <VBox layoutX="10.0" layoutY="10.0" spacing="5.0" HBox.hgrow="ALWAYS">
                      <children>
                         <Label text="Uploaded files:" />
-                        <ListView fx:id="uploadedLV" VBox.vgrow="ALWAYS">
+                        <ListView fx:id="uploadedLV" styleClass="text-14" VBox.vgrow="ALWAYS">
                            <VBox.margin>
                               <Insets />
                            </VBox.margin>
@@ -54,7 +54,7 @@
                   <VBox layoutX="257.0" layoutY="10.0" maxWidth="200.0" minWidth="150.0" spacing="5.0" HBox.hgrow="SOMETIMES">
                      <children>
                         <Label text="Selected files:" />
-                        <ListView fx:id="selectedLV" VBox.vgrow="ALWAYS" />
+                        <ListView fx:id="selectedLV" styleClass="text-14" VBox.vgrow="ALWAYS" />
                      </children>
                   </VBox>
                </children>

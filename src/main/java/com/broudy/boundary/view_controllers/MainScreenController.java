@@ -1,5 +1,8 @@
 package com.broudy.boundary.view_controllers;
 
+import com.broudy.boundary.FXMLView;
+import com.broudy.boundary.RenderingsStyler;
+import com.broudy.control.FilesManager;
 import com.broudy.control.StageManager;
 import java.io.File;
 import java.util.List;
@@ -18,7 +21,9 @@ public class MainScreenController {
 
   private static final Logger LOGGER = LogManager.getLogger(MainScreenController.class);
   private final FileChooser fileChooser;
-  private StageManager stageManager;
+  private final StageManager stageManager;
+  private final FilesManager filesManager;
+
   @FXML
   private HBox contentHB;
 
@@ -41,7 +46,8 @@ public class MainScreenController {
   private Button nextBTN;
 
   public MainScreenController() {
-    this.stageManager = StageManager.getStageManager();
+    stageManager = StageManager.getStageManager();
+    filesManager = FilesManager.getFilesManager();
     fileChooser = new FileChooser();
   }
 
@@ -66,6 +72,28 @@ public class MainScreenController {
     uploadedLV.setPlaceholder(new Label("Drag & drop"));
     selectedLV.setPlaceholder(new Label("None selected"));
 
+    uploadedLV.setCellFactory(RenderingsStyler::callUploadedLV);
+    selectedLV.setCellFactory(RenderingsStyler::callUploadedLV);
+
+    // uploadedLV.setCellFactory(file-> new ListCell<>(){
+    //         @Override
+    //         protected void updateItem(File item, boolean empty) {
+    //           super.updateItem(item, empty);
+    //           setText(empty ? "" : item.getName());
+    //         }
+    // });
+    // uploadedLV.setCellFactory(new Callback<>() {
+    //   @Override
+    //   public ListCell<File> call(ListView<File> file) {
+    //     return new ListCell<>() {
+    //       @Override
+    //       protected void updateItem(File item, boolean empty) {
+    //         super.updateItem(item, empty);
+    //         setText(empty ? "" : item.getName());
+    //       }
+    //     };
+    //   }
+    // });
     initializeBindings();
     initializeEventHandlers();
     // initializeEventListeners();
@@ -74,6 +102,10 @@ public class MainScreenController {
 
 
   private void initializeBindings() {
+
+    databaseLV.itemsProperty().bindBidirectional(filesManager.databaseDNAFilesProperty());
+    uploadedLV.itemsProperty().bindBidirectional(filesManager.uploadedDNAFilesProperty());
+    selectedLV.itemsProperty().bindBidirectional(filesManager.selectedDNAFilesProperty());
 
     nextBTN.disableProperty().bind(Bindings.isEmpty(selectedLV.getItems()));
 
@@ -98,8 +130,8 @@ public class MainScreenController {
     uploadBTN.setOnAction(click -> {
       final List<File> filesToUpload = fileChooser
           .showOpenMultipleDialog(stageManager.getPrimaryStage());
-      if (!filesToUpload.isEmpty()) {
-        uploadedLV.getItems().addAll();
+      if (filesToUpload != null) {
+        uploadedLV.getItems().addAll(filesToUpload);
       }
     });
 
@@ -110,10 +142,9 @@ public class MainScreenController {
     setDoubleClickHandlerBetween(databaseLV, selectedLV);
     // TODO handle removal of database files from selected files
 
+    nextBTN.setOnAction(click -> stageManager.switchScene(FXMLView.TARGET_SITE_SELECTION));
+
   }
-
-
-
 
   // -----------------------------------------------------------------------------------------------
   // Helper Functions

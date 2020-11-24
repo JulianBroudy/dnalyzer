@@ -17,7 +17,18 @@ public enum FXMLView {
 
     @Override
     public String getTitle() {
-      return "Primary View";
+      return "Main Screen";
+    }
+  },
+  TARGET_SITE_SELECTION {
+    @Override
+    public String getPath() {
+      return "/com/broudy/FXMLs/TargetSitesSelectionVIEW.fxml";
+    }
+
+    @Override
+    public String getTitle() {
+      return "Target Site Selector";
     }
   };
 

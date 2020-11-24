@@ -58,6 +58,12 @@ public class StageManager {
     show(fxmlViewRootNode);
   }
 
+  public void switchScene(final FXMLView fxmlView) {
+    LOGGER.traceEntry("switching scene: {}", () -> fxmlView);
+    Parent fxmlViewRootNode = loadViewNodeHierarchy(fxmlView);
+    primaryStage.getScene().setRoot(fxmlViewRootNode);
+  }
+
   /**
    * This method loads the passed {@see FXMLView} after all its dependencies if any are resolved by
    * the {@see boundary.EnhancedFXMLLoader} and returns the top-most node of the FXML's hierarchy.
