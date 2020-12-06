@@ -1,5 +1,6 @@
 package com.broudy.control;
 
+import com.broudy.entity.ParsedSequence;
 import com.broudy.entity.Sequence;
 import java.io.File;
 import javafx.beans.property.ListProperty;
@@ -26,12 +27,14 @@ public class FilesManager {
   private final ListProperty<File> uploadedDNAFiles;
   private final ListProperty<File> selectedDNAFiles;
   private final ListProperty<Sequence> matchedSequences;
+  private final ListProperty<ParsedSequence> parsedSequences;
 
   private FilesManager() {
     databaseDNAFiles = new SimpleListProperty<>(FXCollections.observableArrayList());
     uploadedDNAFiles = new SimpleListProperty<>(FXCollections.observableArrayList());
     selectedDNAFiles = new SimpleListProperty<>(FXCollections.observableArrayList());
     matchedSequences = new SimpleListProperty<>(FXCollections.observableArrayList());
+    parsedSequences = new SimpleListProperty<>(FXCollections.observableArrayList());
   }
 
   public static FilesManager getFilesManager() {
@@ -87,5 +90,17 @@ public class FilesManager {
 
   public void setMatchedSequences(ObservableList<Sequence> matchedSequences) {
     this.matchedSequences.set(matchedSequences);
+  }
+
+  public ObservableList<ParsedSequence> getParsedSequences() {
+    return parsedSequences.get();
+  }
+
+  public ListProperty<ParsedSequence> parsedSequencesProperty() {
+    return parsedSequences;
+  }
+
+  public void setParsedSequences(ObservableList<ParsedSequence> parsedSequences) {
+    this.parsedSequences.set(parsedSequences);
   }
 }

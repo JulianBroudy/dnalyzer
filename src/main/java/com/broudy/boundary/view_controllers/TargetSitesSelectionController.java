@@ -109,7 +109,7 @@ public class TargetSitesSelectionController {
     unmatchBTN.setOnAction(click -> filesManager.getMatchedSequences()
         .remove(matchedLV.getSelectionModel().getSelectedItem()));
 
-    nextBTN.setOnAction(click -> stageManager.switchScene(FXMLView.MAIN_SCREEN));
+    nextBTN.setOnAction(click -> stageManager.switchScene(FXMLView.ANALYSIS_PROGRESS));
 
   }
 

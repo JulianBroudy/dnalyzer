@@ -30,6 +30,17 @@ public enum FXMLView {
     public String getTitle() {
       return "Target Site Selector";
     }
+  },
+  ANALYSIS_PROGRESS {
+    @Override
+    public String getPath() {
+      return "/com/broudy/FXMLs/AnalysisProgressVIEW.fxml";
+    }
+
+    @Override
+    public String getTitle() {
+      return "Analysis Progress";
+    }
   };
 
 

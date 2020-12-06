@@ -2,6 +2,7 @@ module com.broudy {
     requires javafx.controls;
     requires javafx.fxml;
     requires org.apache.logging.log4j;
+    requires poi.ooxml;
 
     opens com.broudy to javafx.fxml;
     exports com.broudy;
