@@ -8,6 +8,7 @@ import com.broudy.entity.Sequence;
 import java.io.File;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
@@ -45,6 +46,12 @@ public class TargetSitesSelectionController {
   private Button uploadTargetSiteBTN;
 
   @FXML
+  private CheckBox yesCB;
+
+  @FXML
+  private CheckBox noCB;
+
+  @FXML
   private ListView<Sequence> matchedLV;
 
   @FXML
@@ -64,6 +71,8 @@ public class TargetSitesSelectionController {
 
     unmatchedCB.setCellFactory(RenderingsStyler::callUploadedLV);
     matchedLV.setCellFactory(RenderingsStyler::callMatchedLV);
+    RenderingsStyler.allowNumericalOnly(startIndexTF);
+    RenderingsStyler.allowNumericalOnly(endIndexTF);
 
     initializeBindings();
     initializeEventHandlers();
@@ -73,10 +82,12 @@ public class TargetSitesSelectionController {
   private void initializeBindings() {
     unmatchedCB.itemsProperty().bindBidirectional(filesManager.selectedDNAFilesProperty());
 
-    startIndexTF.disableProperty().bind(unmatchedCB.valueProperty().isNull());
-    RenderingsStyler.allowNumericalOnly(startIndexTF);
+    yesCB.disableProperty().bind(unmatchedCB.valueProperty().isNull());
+    noCB.disableProperty().bind(yesCB.disableProperty());
+
+    startIndexTF.disableProperty()
+        .bind(yesCB.selectedProperty().not().and(noCB.selectedProperty().not()));
     endIndexTF.disableProperty().bind(startIndexTF.disableProperty());
-    RenderingsStyler.allowNumericalOnly(endIndexTF);
     setBTN.disableProperty()
         .bind(startIndexTF.textProperty().isEmpty().or(endIndexTF.textProperty().isEmpty()));
 
@@ -86,6 +97,17 @@ public class TargetSitesSelectionController {
   }
 
   private void initializeEventHandlers() {
+
+    yesCB.setOnAction(action ->{
+      if(yesCB.isSelected()){
+        noCB.setSelected(false);
+      }
+    });
+    noCB.setOnAction(action ->{
+      if(noCB.isSelected()){
+        yesCB.setSelected(false);
+      }
+    });
 
     setBTN.setOnAction(click -> {
       //TODO check if both indices are actually inclusive
@@ -101,7 +123,7 @@ public class TargetSitesSelectionController {
       }*/
 
       final Sequence matchedSequence = new Sequence(unmatchedCB.getValue(), startIndexTF.getText(),
-          endIndexTF.getText());
+          endIndexTF.getText(), yesCB.isSelected());
       filesManager.getMatchedSequences().add(matchedSequence);
 
     });

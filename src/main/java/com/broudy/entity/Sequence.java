@@ -14,15 +14,17 @@ public class Sequence {
   private final File dnaSequence;
   private File targetFile;
   private int startIndex, endIndex;
+  private boolean isCyclic;
 
-  public Sequence(File dnaSequence, int startIndex, int endIndex) {
+  public Sequence(File dnaSequence, int startIndex, int endIndex, boolean isCyclic) {
     this.dnaSequence = dnaSequence;
     this.startIndex = startIndex;
     this.endIndex = endIndex;
+    this.isCyclic = isCyclic;
   }
 
-  public Sequence(File dnaSequence, String startIndex, String endIndex) {
-    this(dnaSequence, Integer.parseInt(startIndex), Integer.parseInt(endIndex));
+  public Sequence(File dnaSequence, String startIndex, String endIndex, boolean isCyclic) {
+    this(dnaSequence, Integer.parseInt(startIndex), Integer.parseInt(endIndex), isCyclic);
   }
 
 
@@ -60,6 +62,15 @@ public class Sequence {
    */
   public int getEndIndex() {
     return endIndex;
+  }
+
+  /**
+   * Gets the isCyclic.
+   *
+   * @return isCyclic's value.
+   */
+  public boolean isCyclic() {
+    return isCyclic;
   }
 }
 

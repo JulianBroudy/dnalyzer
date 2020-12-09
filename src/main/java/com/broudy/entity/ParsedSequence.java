@@ -17,6 +17,7 @@ public class ParsedSequence {
   private final String sequenceAfterTargetSite;
   private HashMap<String, HashMap<String, Occurrences>> results;
 
+
   public ParsedSequence(String header, String sequenceBeforeTargetSite, String targetSite,
       String sequenceAfterTargetSite) {
     this.header = header;
@@ -82,6 +83,12 @@ public class ParsedSequence {
 
   @Override
   public String toString() {
+    return "ParsedSequence:\n" + "left: "+ sequenceBeforeTargetSite + "\ntarget: "+ targetSite
+        + "\nright: "+ sequenceAfterTargetSite + "\n\n";
+  }
+
+
+  public String toString2() {
     return "ParsedSequence:\t" + header + "\n" + sequenceBeforeTargetSite + targetSite
         + sequenceAfterTargetSite + "\n\n";
   }

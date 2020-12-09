@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -45,8 +46,8 @@ public class Analyzer extends Task<ParsedSequence> {
     StringBuilder reversedSequence = new StringBuilder(
         parsedSequence.getSequenceBeforeTargetSite());
     reversedSequence.reverse();
-    final String rightPalimentary = reversedSequence.toString().replace('A', 'T').replace('T', 'A')
-        .replace('G', 'C').replace('C', 'G');
+    // final String rightPalimentary = reversedSequence.toString().replace('A', 'T').replace('T', 'A')
+    //     .replace('G', 'C').replace('C', 'G');
 
     // 3. Count occurrences in both sides
     updateProgress(0, wildPatterns.size());
@@ -71,10 +72,16 @@ public class Analyzer extends Task<ParsedSequence> {
 
     long progress = 0;
     updateProgress(progress++, allPatterns.size());
+    // final HashSet<String> checkedPatterns = new HashSet<>();
+
     for (HashMap<String, Occurrences> patterns : allPatterns.values()) {
       updateProgress(progress++, allPatterns.size());
       for (Map.Entry<String, Occurrences> pattern : patterns.entrySet()) {
-        final Pattern p = Pattern.compile(pattern.getKey().replace("W", "[ACGT]"));
+        // if (checkedPatterns.contains(pattern.getKey())) {
+        //   continue;
+        // }
+        // checkedPatterns.add(pattern.getKey());
+        final Pattern p = Pattern.compile(pattern.getKey().replace("-", "[ACGT]"));
         final Matcher m = p.matcher(sequence);
         long numberOfOccurrences = 0;
         while (m.find()) {
@@ -96,10 +103,16 @@ public class Analyzer extends Task<ParsedSequence> {
       HashMap<String, HashMap<String, Occurrences>> allPatterns) {
     long progress = 0;
     updateProgress(progress++, allPatterns.size());
+    final HashSet<String> checkedPatterns = new HashSet<>();
+
     for (HashMap<String, Occurrences> patterns : allPatterns.values()) {
       updateProgress(progress++, allPatterns.size());
       for (Map.Entry<String, Occurrences> pattern : patterns.entrySet()) {
-        final Pattern p = Pattern.compile(pattern.getKey().replace("W", "[ACGT]"));
+        if (checkedPatterns.contains(pattern.getKey())) {
+          continue;
+        }
+        checkedPatterns.add(pattern.getKey());
+        final Pattern p = Pattern.compile(pattern.getKey().replace("-", "[ACGT]"));
         final Matcher m = p.matcher(sequence);
         long numberOfOccurrences = 0;
         while (m.find()) {
@@ -146,10 +159,12 @@ public class Analyzer extends Task<ParsedSequence> {
   private HashMap<String, HashMap<String, Occurrences>> generateWildPatterns(
       Set<String> simplePatterns) {
     HashMap<String, HashMap<String, Occurrences>> wildPatterns = new HashMap<>();
+
+    final HashSet<String> generatedPatterns = new HashSet<>();
     // final String regexStart = "(?=(";
     final String regexStart = "";
     // final String regexGap = "[ACGT]";
-    final String regexGap = "W";
+    final String regexGap = "-";
     // final String regexEnd = "))";
     final String regexEnd = "";
 
@@ -171,7 +186,10 @@ public class Analyzer extends Task<ParsedSequence> {
           }
         }
         newPattern.append(candidate.charAt(len - 1));   // Because first nucleotide must stay put.
-        wildPatternsOfCandidate.put(newPattern.toString(), new Occurrences());
+        if (!generatedPatterns.contains(newPattern.toString())) {
+          wildPatternsOfCandidate.put(newPattern.toString(), new Occurrences());
+          generatedPatterns.add(newPattern.toString());
+        }
       }
       wildPatterns.put(candidate, wildPatternsOfCandidate);
     }

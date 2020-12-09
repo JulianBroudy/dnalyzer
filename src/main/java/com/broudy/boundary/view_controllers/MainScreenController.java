@@ -159,8 +159,10 @@ public class MainScreenController {
 
   private void moveSelectedFileFromTo(ListView<File> from, ListView<File> to) {
     final File selectedFile = from.getSelectionModel().getSelectedItem();
-    to.getItems().add(selectedFile);
-    from.getItems().remove(selectedFile);
+    if(selectedFile!=null) {
+      to.getItems().add(selectedFile);
+      from.getItems().remove(selectedFile);
+    }
   }
 
 
