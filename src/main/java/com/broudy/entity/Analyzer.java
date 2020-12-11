@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -22,6 +22,7 @@ import javafx.concurrent.Task;
 public class Analyzer extends Task<ParsedSequence> {
 
   private final ParsedSequence parsedSequence;
+  private int[] nucleotidesCount;
 
   public Analyzer(ParsedSequence parsedSequence) {
     this.parsedSequence = parsedSequence;
@@ -33,30 +34,30 @@ public class Analyzer extends Task<ParsedSequence> {
     // Analyze left side
     updateProgress(0, 2);
 
+    nucleotidesCount = countNucleotides();
+
     // 1. Get regexes for left side patterns
-    final HashMap<String, Integer> simplePatterns = extractSimplePatterns(
+    final HashSet<String> simplePatterns = extractSimplePatterns(
         parsedSequence.getSequenceBeforeTargetSite());
     updateProgress(1, 2);
 
-    final HashMap<String, HashMap<String, Occurrences>> wildPatterns = generateWildPatterns(
-        simplePatterns.keySet());
+    final HashSet<ProtonavPair> protonavPairs = generateWildPatterns(simplePatterns);
     updateProgress(2, 2);
 
+    // final HashSet<ProtonavPair> protonavPairs = generateProtonavPairs(simplePatterns);
+
     // 2. Generate palimentary (palindromic and complementary) of right side
-    StringBuilder reversedSequence = new StringBuilder(
-        parsedSequence.getSequenceBeforeTargetSite());
-    reversedSequence.reverse();
+    // StringBuilder reversedSequence = new StringBuilder(
+    //     parsedSequence.getSequenceBeforeTargetSite());
+    // reversedSequence.reverse();
     // final String rightPalimentary = reversedSequence.toString().replace('A', 'T').replace('T', 'A')
     //     .replace('G', 'C').replace('C', 'G');
 
     // 3. Count occurrences in both sides
-    updateProgress(0, wildPatterns.size());
-    countOccurrencesForLeftOf(parsedSequence.getSequenceBeforeTargetSite(), wildPatterns);
+    countOccurrencesForLeftOf(parsedSequence.getSequenceBeforeTargetSite(), protonavPairs);
+    countOccurrencesForRightOf(parsedSequence.getSequenceAfterTargetSite(), protonavPairs);
 
-    updateProgress(0, wildPatterns.size());
-    countOccurrencesForRightOf(parsedSequence.getSequenceAfterTargetSite(), wildPatterns);
-
-    parsedSequence.setResults(wildPatterns);
+    parsedSequence.setResults(protonavPairs);
     // for (HashMap<String, Occurrences> patterns : wildPatterns.values()) {
     //   patterns.entrySet().stream().sorted(Map.Entry.comparingByKey())
     //       .forEach(entry -> System.out.println(entry.getKey() + ": " + entry.getValue()));
@@ -67,67 +68,106 @@ public class Analyzer extends Task<ParsedSequence> {
     return parsedSequence;
   }
 
-  private void countOccurrencesForRightOf(String sequence,
-      HashMap<String, HashMap<String, Occurrences>> allPatterns) {
+  private int[] countNucleotides() {
+    int[] count = new int[26];
 
-    long progress = 0;
-    updateProgress(progress++, allPatterns.size());
-    // final HashSet<String> checkedPatterns = new HashSet<>();
-
-    for (HashMap<String, Occurrences> patterns : allPatterns.values()) {
-      updateProgress(progress++, allPatterns.size());
-      for (Map.Entry<String, Occurrences> pattern : patterns.entrySet()) {
-        // if (checkedPatterns.contains(pattern.getKey())) {
-        //   continue;
-        // }
-        // checkedPatterns.add(pattern.getKey());
-        final Pattern p = Pattern.compile(pattern.getKey().replace("-", "[ACGT]"));
-        final Matcher m = p.matcher(sequence);
-        long numberOfOccurrences = 0;
-        while (m.find()) {
-          final int groupCount = m.groupCount();
-          for (int i = 0; i <= groupCount; i++) {
-            if (!m.group(i).isEmpty()) {
-              numberOfOccurrences++;
-            }
-          }
-        }
-        pattern.getValue().increaseRightCount(numberOfOccurrences);
-      }
+    char[] sequence = parsedSequence.getSequenceBeforeTargetSite().toCharArray();
+    for (char ch : sequence) {
+      count[ch - 'A']++;
+    }
+    sequence = parsedSequence.getSequenceAfterTargetSite().toCharArray();
+    for (char ch : sequence) {
+      count[ch - 'A']++;
     }
 
-
+    return count;
   }
 
-  private void countOccurrencesForLeftOf(String sequence,
-      HashMap<String, HashMap<String, Occurrences>> allPatterns) {
-    long progress = 0;
-    updateProgress(progress++, allPatterns.size());
-    final HashSet<String> checkedPatterns = new HashSet<>();
 
-    for (HashMap<String, Occurrences> patterns : allPatterns.values()) {
-      updateProgress(progress++, allPatterns.size());
-      for (Map.Entry<String, Occurrences> pattern : patterns.entrySet()) {
-        if (checkedPatterns.contains(pattern.getKey())) {
-          continue;
+  private void countOccurrencesForRightOf(String sequence, HashSet<ProtonavPair> allPatterns) {
+
+    long progress = 0;
+    long totalProgress = allPatterns.size() * 2;
+    updateProgress(progress++, totalProgress);
+
+    for (ProtonavPair pair : allPatterns) {
+      pair.getProtonavOccurrences()
+          .increaseRightCount(countOccurrences(pair.getProtonav(), sequence));
+      updateProgress(progress++, totalProgress);
+      pair.getPalimentaryOccurrences()
+          .increaseRightCount(countOccurrences(pair.getPalimentary(), sequence));
+      updateProgress(progress++, totalProgress);
+    }
+  }
+
+  private void countOccurrencesForLeftOf(String sequence, HashSet<ProtonavPair> allPatterns) {
+    long progress = 0;
+    long totalProgress = allPatterns.size() * 2;
+    updateProgress(progress++, totalProgress);
+
+    for (ProtonavPair pair : allPatterns) {
+      pair.getProtonavOccurrences()
+          .increaseLeftCount(countOccurrences(pair.getProtonav(), sequence));
+      updateProgress(progress++, totalProgress);
+      pair.getPalimentaryOccurrences()
+          .increaseLeftCount(countOccurrences(pair.getPalimentary(), sequence));
+      updateProgress(progress++, totalProgress);
+    }
+  }
+
+  private long countOccurrences(String pattern, String sequence) {
+    final Pattern p = Pattern.compile(Objects.requireNonNull(preparePatternForCount(pattern)));
+    final Matcher m = p.matcher(sequence);
+    long numberOfOccurrences = 0;
+    while (m.find()) {
+      final int groupCount = m.groupCount();
+      for (int i = 0; i <= groupCount; i++) {
+        if (!m.group(i).isEmpty()) {
+          numberOfOccurrences++;
         }
-        checkedPatterns.add(pattern.getKey());
-        final Pattern p = Pattern.compile(pattern.getKey().replace("-", "[ACGT]"));
-        final Matcher m = p.matcher(sequence);
-        long numberOfOccurrences = 0;
-        while (m.find()) {
-          final int groupCount = m.groupCount();
-          for (int i = 0; i <= groupCount; i++) {
-            if (!m.group(i).isEmpty()) {
-              numberOfOccurrences++;
-            }
-          }
-        }
-        pattern.getValue().increaseLeftCount(numberOfOccurrences);
+      }
+    }
+    return numberOfOccurrences;
+  }
+
+  private String preparePatternForCount(String pattern) {
+    final StringBuilder patternBuilder = new StringBuilder("");
+
+    for (char ch : pattern.toCharArray()) {
+      switch (ch) {
+        case 'N':
+          patternBuilder.append("[ACGT]");
+          break;
+        case 'W':
+          patternBuilder.append("[AT]");
+          break;
+        case 'S':
+          patternBuilder.append("[CG]");
+          break;
+        case 'R':
+          patternBuilder.append("[AG]");
+          break;
+        case 'Y':
+          patternBuilder.append("[CT]");
+          break;
+        case 'B':
+          patternBuilder.append("[^A]");
+          break;
+        case 'D':
+          patternBuilder.append("[^C]");
+          break;
+        case 'H':
+          patternBuilder.append("[^G]");
+          break;
+        case 'V':
+          patternBuilder.append("[^T]");
+          break;
+        default:
+          patternBuilder.append(ch);
       }
     }
 
-
+    return patternBuilder.toString();
   }
 
 
@@ -142,29 +182,58 @@ public class Analyzer extends Task<ParsedSequence> {
   }
 
 
-  private HashMap<String, Integer> extractSimplePatterns(String sequence) {
-    final HashMap<String, Integer> simplePatterns = new HashMap<>();
-    final int sequenceLength = sequence.length() + 1; // 1 is added here instead of in 2nd for loop
-    String simplePattern;
-    for (int patternLength = 3; patternLength < 7; patternLength++) {
-      for (int i = 0; i < sequenceLength - patternLength; i++) {
-        simplePattern = sequence.substring(i, i + patternLength);
-        simplePatterns.putIfAbsent(simplePattern, 0);
-        simplePatterns.replace(simplePattern, simplePatterns.getOrDefault(simplePattern, 0) + 1);
+  private HashSet<String> extractSimplePatterns(String sequence) {
+    return extractSimplePatterns(sequence, 3, 7);
+  }
+
+  private HashSet<String> extractSimplePatterns(String sequence, int minLength, int maxLength) {
+
+    final HashSet<String> simplePatterns = new HashSet<>();
+
+    final int length = sequence.length();
+    final int firstLoopLength = length - maxLength + 1;
+
+    long totalProgress = 0;
+    for (int i = minLength; i <= maxLength; i++) {
+      totalProgress += firstLoopLength - i + 1;
+    }
+    long progress = 0;
+    updateProgress(progress++, totalProgress);
+
+    for (int index = 0; index < firstLoopLength; index++) {
+      for (int patternLength = minLength; patternLength < maxLength; patternLength++) {
+        simplePatterns.add(sequence.substring(index, index + patternLength));
+        updateProgress(progress++, totalProgress);
       }
     }
+
+    for (int index = firstLoopLength; index < length; index++) {
+      for (int patternLength = minLength; patternLength < maxLength; patternLength++) {
+        updateProgress(progress++, totalProgress);
+        if (patternLength + index > length) {
+          continue;
+        }
+        simplePatterns.add(sequence.substring(index, index + patternLength));
+      }
+
+    }
+
+    // for (int patternLength = minLength; patternLength < maxLength; patternLength++) {
+    //   for (int i = firstLoopLength; i < sequenceLength - patternLength; i++) {
+    //     simplePatterns.add(sequence.substring(i, i + patternLength));
+    //   }
+    // }
     return simplePatterns;
   }
 
-  private HashMap<String, HashMap<String, Occurrences>> generateWildPatterns(
-      Set<String> simplePatterns) {
-    HashMap<String, HashMap<String, Occurrences>> wildPatterns = new HashMap<>();
+  private HashSet<ProtonavPair> generateWildPatterns(Set<String> simplePatterns) {
+    HashSet<ProtonavPair> protonavPairs = new HashSet<>();
 
     final HashSet<String> generatedPatterns = new HashSet<>();
     // final String regexStart = "(?=(";
     final String regexStart = "";
     // final String regexGap = "[ACGT]";
-    final String regexGap = "-";
+    final String regexGap = "N";
     // final String regexEnd = "))";
     final String regexEnd = "";
 
@@ -174,28 +243,98 @@ public class Analyzer extends Task<ParsedSequence> {
       // Get all permutations of pattern's length - 2 because 1st and last nucleotide must stay put.
       List<char[]> permutations = booleanPermutationsWithMaxSetBits(len - 2, Math.floorDiv(len, 2));
 
-      final HashMap<String, Occurrences> wildPatternsOfCandidate = new HashMap<>();
+      // final HashMap<String, String> protonavPairs = new HashMap<>();
       for (char[] permutation : permutations) {
-        final StringBuilder newPattern = new StringBuilder("");
-        newPattern.append(candidate.charAt(0));        // Because first nucleotide must stay put.
+        final StringBuilder protonavBuilder = new StringBuilder("");
+        protonavBuilder
+            .append(candidate.charAt(0));        // Because first nucleotide must stay put.
         for (int nucleotide = 1; nucleotide < len - 1; nucleotide++) {
           if (permutation[nucleotide - 1] == '1') {
-            newPattern.append(regexGap);
+            protonavBuilder.append(regexGap);
           } else {
-            newPattern.append(candidate.charAt(nucleotide));
+            protonavBuilder.append(candidate.charAt(nucleotide));
           }
         }
-        newPattern.append(candidate.charAt(len - 1));   // Because first nucleotide must stay put.
-        if (!generatedPatterns.contains(newPattern.toString())) {
-          wildPatternsOfCandidate.put(newPattern.toString(), new Occurrences());
-          generatedPatterns.add(newPattern.toString());
+        protonavBuilder
+            .append(candidate.charAt(len - 1));   // Because last nucleotide must stay put.
+        final String protonav = protonavBuilder.toString();
+        if (!generatedPatterns.contains(protonav)) {
+          generatedPatterns.add(protonav);
+
+          long protonavProbability = 0;
+          long palimentaryProbability = 0;
+
+          final char[] reversedProtonav = protonavBuilder.reverse().toString().toCharArray();
+          final StringBuilder palimentaryBuilder = new StringBuilder("");
+          for (char ch : reversedProtonav) {
+            protonavProbability += nucleotidesCount[ch - 'A'];
+            final char nucleotide;
+            switch (ch) {
+              case 'A':
+                nucleotide = 'T';
+                // palimentaryBuilder.append("T");
+                break;
+              case 'T':
+                nucleotide = 'A';
+                // palimentaryBuilder.append("A");
+                break;
+              case 'C':
+                nucleotide = 'G';
+                // palimentaryBuilder.append("G");
+                break;
+              case 'G':
+                nucleotide = 'C';
+                // palimentaryBuilder.append("C");
+                break;
+              case 'W':
+                nucleotide = 'S';
+                // palimentaryBuilder.append("S");
+                break;
+              case 'S':
+                nucleotide = 'W';
+                // palimentaryBuilder.append("W");
+                break;
+              case 'R':
+                nucleotide = 'Y';
+                // palimentaryBuilder.append("Y");
+                break;
+              case 'Y':
+                nucleotide = 'R';
+                // palimentaryBuilder.append("R");
+                break;
+              case 'B':
+                nucleotide = 'V';
+                // palimentaryBuilder.append("V");
+                break;
+              case 'V':
+                nucleotide = 'B';
+                // palimentaryBuilder.append("B");
+                break;
+              case 'D':
+                nucleotide = 'H';
+                // palimentaryBuilder.append("H");
+                break;
+              case 'H':
+                nucleotide = 'D';
+                // palimentaryBuilder.append("D");
+                break;
+              default:
+                nucleotide = 'N';
+                // palimentaryBuilder.append(ch);
+            }
+            palimentaryBuilder.append(nucleotide);
+            palimentaryProbability += nucleotidesCount[nucleotide - 'A'];
+          }
+          final ProtonavPair newPair = new ProtonavPair(protonav, palimentaryBuilder.toString());
+          newPair.setProtonavProbability(protonavProbability);
+          newPair.setPalimentaryProbability(palimentaryProbability);
+          protonavPairs.add(newPair);
         }
       }
-      wildPatterns.put(candidate, wildPatternsOfCandidate);
     }
     // System.out.println("\n\n\nCandidates with Regexes:");
     // System.out.println(wildPatterns);
-    return wildPatterns;
+    return protonavPairs;
   }
 
   private HashMap<String, List<String>> generateInterruptedPatterns(Set<String> simplePatterns) {

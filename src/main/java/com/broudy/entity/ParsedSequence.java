@@ -1,6 +1,7 @@
 package com.broudy.entity;
 
 import java.util.HashMap;
+import java.util.HashSet;
 
 /**
  * TODO provide a summary to ParsedSequence class!!!!!
@@ -15,7 +16,7 @@ public class ParsedSequence {
   private final String sequenceBeforeTargetSite;
   private final String targetSite;
   private final String sequenceAfterTargetSite;
-  private HashMap<String, HashMap<String, Occurrences>> results;
+  private HashSet<ProtonavPair> results;
 
 
   public ParsedSequence(String header, String sequenceBeforeTargetSite, String targetSite,
@@ -68,7 +69,7 @@ public class ParsedSequence {
    *
    * @return results's value.
    */
-  public HashMap<String, HashMap<String, Occurrences>> getResults() {
+  public HashSet<ProtonavPair> getResults() {
     return results;
   }
 
@@ -77,7 +78,7 @@ public class ParsedSequence {
    *
    * @param results is the results's new value.
    */
-  public void setResults(HashMap<String, HashMap<String, Occurrences>> results) {
+  public void setResults(HashSet<ProtonavPair> results) {
     this.results = results;
   }
 

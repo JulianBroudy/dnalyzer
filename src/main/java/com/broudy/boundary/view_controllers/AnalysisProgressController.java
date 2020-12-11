@@ -6,15 +6,15 @@ import com.broudy.control.StageManager;
 import com.broudy.entity.Analyzer;
 import com.broudy.entity.Occurrences;
 import com.broudy.entity.ParsedSequence;
+import com.broudy.entity.ProtonavPair;
 import com.broudy.entity.Sequence;
 import com.broudy.entity.SequenceParser;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXML;
@@ -107,27 +107,30 @@ public class AnalysisProgressController {
     //       .forEach(entry -> System.out.println(entry.getKey() + ": " + entry.getValue()));
     // }
 
-    HashMap<String, HashMap<String, Occurrences>> result = parsedSequence.getResults();
+    HashSet<ProtonavPair> results = parsedSequence.getResults();
     int rowCount = 0;
     XSSFRow row = sheet.createRow(rowCount++);
     XSSFCell cell = row.createCell(0);
-    cell.setCellValue("Protonav");
+    cell.setCellValue("ID");
     cell = row.createCell(1);
-    cell.setCellValue("Left Occurrences");
+    cell.setCellValue("Protonav");
     cell = row.createCell(2);
+    cell.setCellValue("Left Occurrences");
+    cell = row.createCell(3);
     cell.setCellValue("Right Occurrences");
 
-    for (HashMap<String, Occurrences> patterns : result.values()) {
-      for (Map.Entry<String, Occurrences> entry : patterns.entrySet()) {
-        row = sheet.createRow(rowCount++);
-        cell = row.createCell(0);
-        cell.setCellValue(entry.getKey());
-        cell = row.createCell(1);
-        cell.setCellValue(entry.getValue().getLeftCount().toString());
-        cell = row.createCell(2);
-        cell.setCellValue(entry.getValue().getRightCount().toString());
-      }
+    for (ProtonavPair pair : results) {
+      row = sheet.createRow(rowCount++);
+      cell = row.createCell(0);
+      cell.setCellValue(pair.getID());
+      writeRow(pair.getProtonav(), pair.getProtonavOccurrences(), row);
+
+      row = sheet.createRow(rowCount++);
+      cell = row.createCell(0);
+      cell.setCellValue(pair.getID());
+      writeRow(pair.getPalimentary(), pair.getPalimentaryOccurrences(), row);
     }
+
     fileChooser.setInitialFileName(parsedSequence.getHeader().substring(1) + ".xlsx");
     File outputFile = fileChooser.showSaveDialog(stageManager.getPrimaryStage());
     try (OutputStream fileOut = new FileOutputStream(outputFile)) {
@@ -136,6 +139,17 @@ public class AnalysisProgressController {
 
     }
 
+  }
+
+  private void writeRow(String protonav, Occurrences protonavOccurrences, XSSFRow row) {
+    XSSFCell cell = row.createCell(1);
+    cell.setCellValue(protonav);
+
+    cell = row.createCell(2);
+    cell.setCellValue(protonavOccurrences.getLeftCount().toString());
+
+    cell = row.createCell(3);
+    cell.setCellValue(protonavOccurrences.getRightCount().toString());
   }
 
 
