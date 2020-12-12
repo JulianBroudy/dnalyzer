@@ -34,9 +34,12 @@ public class Analyzer extends Task<ParsedSequence> {
     // Analyze left side
     updateProgress(0, 2);
 
+    System.out.println("Before setNucleotideAndPairingProbabilities()");
+
     setNucleotideAndPairingProbabilities();
     nucleotidesProbabilities = parsedSequence.getNucleotidesProbabilities();
 
+    System.out.println("Before extractSimplePatterns()");
     // 1. Get regexes for left side patterns
     final HashSet<String> simplePatterns = extractSimplePatterns(
         parsedSequence.getSequenceBeforeTargetSite());
@@ -69,23 +72,31 @@ public class Analyzer extends Task<ParsedSequence> {
     long[] occurrences = new long[26];
     final HashMap<String, Double> possiblePairings = new HashMap<>();
     String sequence = parsedSequence.getSequenceBeforeTargetSite();
-    int length = sequence.length();
+    int length = sequence.length() - 1;
+    System.out.println("76");
 
     String pair;
     for (int i = 0; i < length; i++) {
       occurrences[sequence.charAt(i) - 'A']++;
-      pair = sequence.substring(i, i + 2);
-      possiblePairings.put(pair, possiblePairings.get(pair) + 1);
+      // pair = sequence.substring(i, i + 2);
+      // possiblePairings.put(pair, possiblePairings.getOrDefault(pair,(double)0) + 1);
     }
+    occurrences[sequence.charAt(length+1) - 'A']++;
+
+
+    System.out.println("85");
 
     sequence = parsedSequence.getSequenceAfterTargetSite();
-    length = sequence.length();
+    length = sequence.length() -1;
 
     for (int i = 0; i < length; i++) {
       occurrences[sequence.charAt(i) - 'A']++;
-      pair = sequence.substring(i, i + 2);
-      possiblePairings.put(pair, possiblePairings.get(pair) + 1);
+      // pair = sequence.substring(i, i + 2);
+      // possiblePairings.put(pair, possiblePairings.getOrDefault(pair,(double)0) + 1);
     }
+    occurrences[sequence.charAt(length+1) - 'A']++;
+
+    System.out.println("95");
 
     double totalCount = parsedSequence.getSequenceBeforeTargetSite().length() + parsedSequence
         .getSequenceAfterTargetSite().length();
@@ -97,21 +108,22 @@ public class Analyzer extends Task<ParsedSequence> {
         probabilities[i] = occurrences[i] / totalCount;
       }
     }
+    System.out.println("107");
 
     parsedSequence.setNucleotidesProbabilities(probabilities);
 
-    double totalPairs = 0;
-    for (Double count : possiblePairings.values()) {
-      totalPairs += count;
-    }
-    for (String pairKey : possiblePairings.keySet()) {
-      if (possiblePairings.get(pairKey) == 0) {
-        possiblePairings.put(pairKey, (double) 1);
-      } else {
-        possiblePairings.put(pairKey, possiblePairings.get(pairKey) / totalPairs);
-      }
-    }
-
+    // double totalPairs = 0;
+    // for (Double count : possiblePairings.values()) {
+    //   totalPairs += count;
+    // }
+    // for (String pairKey : possiblePairings.keySet()) {
+    //   if (possiblePairings.get(pairKey) == 0) {
+    //     possiblePairings.put(pairKey, (double) 1);
+    //   } else {
+    //     possiblePairings.put(pairKey, possiblePairings.get(pairKey) / totalPairs);
+    //   }
+    // }
+    System.out.println("122");
     parsedSequence.setPairsProbabilities(possiblePairings);
 
   }
@@ -134,6 +146,8 @@ public class Analyzer extends Task<ParsedSequence> {
   }
 
   private void countOccurrencesForLeftOf(String sequence, HashSet<ProtonavPair> allPatterns) {
+    // System.out.println("countOccurrencesForLeftOf");
+
     long progress = 0;
     long totalProgress = allPatterns.size() * 2;
     updateProgress(progress++, totalProgress);
@@ -149,6 +163,7 @@ public class Analyzer extends Task<ParsedSequence> {
   }
 
   private long countProtonavs(Protonav protonav, String sequence) {
+    // System.out.println("countProtonavs");
     final Pattern p = Pattern.compile(Objects.requireNonNull(prepareProtonavForCount(protonav)));
     return countPattern(p, sequence);
   }
@@ -168,15 +183,18 @@ public class Analyzer extends Task<ParsedSequence> {
   }
 
   private String prepareProtonavForCount(Protonav protonav) {
+    // System.out.println("prepareProtonavForCount");
     final StringBuilder patternBuilder = new StringBuilder("");
     final String pattern = protonav.getPattern();
-    final int len = pattern.length();
+    final int len = pattern.length() - 1;
     long pairProbability = 1;
     for (int index = 0; index < len; index++) {
       patternBuilder.append(getAppropriateRegex(pattern.charAt(index)));
       pairProbability *= parsedSequence.getPairsProbabilities()
           .getOrDefault(pattern.substring(index, index + 2), (double) 1);
     }
+    patternBuilder.append(getAppropriateRegex(pattern.charAt(len+1)));
+
     protonav.setPairsProbability(pairProbability);
     return patternBuilder.toString();
   }
