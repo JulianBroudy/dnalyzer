@@ -1,7 +1,5 @@
 package com.broudy.entity;
 
-import java.math.BigInteger;
-
 /**
  * TODO provide a summary to OccurrenceCount class!!!!!
  * <p>
@@ -11,12 +9,12 @@ import java.math.BigInteger;
  */
 public class Occurrences {
 
-  private BigInteger leftCount;
-  private BigInteger rightCount;
+  private long leftCount;
+  private long rightCount;
 
   public Occurrences() {
-    this.leftCount = BigInteger.ZERO;
-    this.rightCount = BigInteger.ZERO;
+    this.leftCount = 0;
+    this.rightCount = 0;
   }
 
   /**
@@ -24,7 +22,7 @@ public class Occurrences {
    *
    * @return leftCount's value.
    */
-  public BigInteger getLeftCount() {
+  public long getLeftCount() {
     return leftCount;
   }
 
@@ -33,32 +31,24 @@ public class Occurrences {
    *
    * @return rightCount's value.
    */
-  public BigInteger getRightCount() {
+  public long getRightCount() {
     return rightCount;
   }
 
-  public void increaseLeftCountByOne(){
-    leftCount = leftCount.add(BigInteger.ONE);
+  public void increaseLeftCountByOne() {
+    leftCount += 1;
   }
 
-  public void increaseRightCountByOne(){
-    rightCount = rightCount.add(BigInteger.ONE);
+  public void increaseRightCountByOne() {
+    rightCount += 1;
   }
 
-  public void increaseLeftCount(int by){
-    leftCount = leftCount.add(BigInteger.valueOf(by));
+  public void increaseLeftCount(long by) {
+    leftCount += by;
   }
 
-  public void increaseRightCount(int by){
-    rightCount = rightCount.add(BigInteger.valueOf(by));
-  }
-
-  public void increaseLeftCount(long by){
-    leftCount = leftCount.add(BigInteger.valueOf(by));
-  }
-
-  public void increaseRightCount(long by){
-    rightCount = rightCount.add(BigInteger.valueOf(by));
+  public void increaseRightCount(long by) {
+    rightCount += by;
   }
 
   @Override

@@ -16,6 +16,8 @@ public class ParsedSequence {
   private final String sequenceBeforeTargetSite;
   private final String targetSite;
   private final String sequenceAfterTargetSite;
+  private double[] nucleotidesProbabilities;
+  private HashMap<String, Double> pairsProbabilities;
   private HashSet<ProtonavPair> results;
 
 
@@ -62,6 +64,42 @@ public class ParsedSequence {
    */
   public String getSequenceAfterTargetSite() {
     return sequenceAfterTargetSite;
+  }
+
+  /**
+   * Gets the nucleotidesCount.
+   *
+   * @return nucleotidesCount's value.
+   */
+  public double[] getNucleotidesProbabilities() {
+    return nucleotidesProbabilities;
+  }
+
+  /**
+   * Sets the nucleotidesCount.
+   *
+   * @param nucleotidesProbabilities is the nucleotidesCount's new value.
+   */
+  public void setNucleotidesProbabilities(double[] nucleotidesProbabilities) {
+    this.nucleotidesProbabilities = nucleotidesProbabilities;
+  }
+
+  /**
+   * Sets the pairsProbabilities.
+   *
+   * @param pairsProbabilities is the pairsProbabilities's new value.
+   */
+  public void setPairsProbabilities(HashMap<String, Double> pairsProbabilities) {
+    this.pairsProbabilities = pairsProbabilities;
+  }
+
+  /**
+   * Gets the pairsProbabilities.
+   *
+   * @return pairsProbabilities's value.
+   */
+  public HashMap<String, Double> getPairsProbabilities() {
+    return pairsProbabilities;
   }
 
   /**

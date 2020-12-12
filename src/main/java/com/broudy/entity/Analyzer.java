@@ -22,7 +22,7 @@ import javafx.concurrent.Task;
 public class Analyzer extends Task<ParsedSequence> {
 
   private final ParsedSequence parsedSequence;
-  private int[] nucleotidesCount;
+  private double[] nucleotidesProbabilities;
 
   public Analyzer(ParsedSequence parsedSequence) {
     this.parsedSequence = parsedSequence;
@@ -34,7 +34,8 @@ public class Analyzer extends Task<ParsedSequence> {
     // Analyze left side
     updateProgress(0, 2);
 
-    nucleotidesCount = countNucleotides();
+    setNucleotideAndPairingProbabilities();
+    nucleotidesProbabilities = parsedSequence.getNucleotidesProbabilities();
 
     // 1. Get regexes for left side patterns
     final HashSet<String> simplePatterns = extractSimplePatterns(
@@ -58,29 +59,61 @@ public class Analyzer extends Task<ParsedSequence> {
     countOccurrencesForRightOf(parsedSequence.getSequenceAfterTargetSite(), protonavPairs);
 
     parsedSequence.setResults(protonavPairs);
-    // for (HashMap<String, Occurrences> patterns : wildPatterns.values()) {
-    //   patterns.entrySet().stream().sorted(Map.Entry.comparingByKey())
-    //       .forEach(entry -> System.out.println(entry.getKey() + ": " + entry.getValue()));
-    // }
 
     // Analyze right side
-
     return parsedSequence;
   }
 
-  private int[] countNucleotides() {
-    int[] count = new int[26];
+  private void setNucleotideAndPairingProbabilities() {
+    // char[] sequence = parsedSequence.getSequenceBeforeTargetSite().toCharArray();
+    long[] occurrences = new long[26];
+    final HashMap<String, Double> possiblePairings = new HashMap<>();
+    String sequence = parsedSequence.getSequenceBeforeTargetSite();
+    int length = sequence.length();
 
-    char[] sequence = parsedSequence.getSequenceBeforeTargetSite().toCharArray();
-    for (char ch : sequence) {
-      count[ch - 'A']++;
-    }
-    sequence = parsedSequence.getSequenceAfterTargetSite().toCharArray();
-    for (char ch : sequence) {
-      count[ch - 'A']++;
+    String pair;
+    for (int i = 0; i < length; i++) {
+      occurrences[sequence.charAt(i) - 'A']++;
+      pair = sequence.substring(i, i + 2);
+      possiblePairings.put(pair, possiblePairings.get(pair) + 1);
     }
 
-    return count;
+    sequence = parsedSequence.getSequenceAfterTargetSite();
+    length = sequence.length();
+
+    for (int i = 0; i < length; i++) {
+      occurrences[sequence.charAt(i) - 'A']++;
+      pair = sequence.substring(i, i + 2);
+      possiblePairings.put(pair, possiblePairings.get(pair) + 1);
+    }
+
+    double totalCount = parsedSequence.getSequenceBeforeTargetSite().length() + parsedSequence
+        .getSequenceAfterTargetSite().length();
+    double[] probabilities = new double[26];
+    for (int i = 0; i < 26; i++) {
+      if (occurrences[i] == 0) {
+        probabilities[i] = 1;
+      } else {
+        probabilities[i] = occurrences[i] / totalCount;
+      }
+    }
+
+    parsedSequence.setNucleotidesProbabilities(probabilities);
+
+    double totalPairs = 0;
+    for (Double count : possiblePairings.values()) {
+      totalPairs += count;
+    }
+    for (String pairKey : possiblePairings.keySet()) {
+      if (possiblePairings.get(pairKey) == 0) {
+        possiblePairings.put(pairKey, (double) 1);
+      } else {
+        possiblePairings.put(pairKey, possiblePairings.get(pairKey) / totalPairs);
+      }
+    }
+
+    parsedSequence.setPairsProbabilities(possiblePairings);
+
   }
 
 
@@ -91,11 +124,11 @@ public class Analyzer extends Task<ParsedSequence> {
     updateProgress(progress++, totalProgress);
 
     for (ProtonavPair pair : allPatterns) {
-      pair.getProtonavOccurrences()
-          .increaseRightCount(countOccurrences(pair.getProtonav(), sequence));
+      pair.getProtonav().getOccurrences()
+          .increaseRightCount(countProtonavs(pair.getProtonav(), sequence));
       updateProgress(progress++, totalProgress);
-      pair.getPalimentaryOccurrences()
-          .increaseRightCount(countOccurrences(pair.getPalimentary(), sequence));
+      pair.getPalimentary().getOccurrences()
+          .increaseRightCount(countProtonavs(pair.getPalimentary(), sequence));
       updateProgress(progress++, totalProgress);
     }
   }
@@ -106,17 +139,21 @@ public class Analyzer extends Task<ParsedSequence> {
     updateProgress(progress++, totalProgress);
 
     for (ProtonavPair pair : allPatterns) {
-      pair.getProtonavOccurrences()
-          .increaseLeftCount(countOccurrences(pair.getProtonav(), sequence));
+      pair.getProtonav().getOccurrences()
+          .increaseLeftCount(countProtonavs(pair.getProtonav(), sequence));
       updateProgress(progress++, totalProgress);
-      pair.getPalimentaryOccurrences()
-          .increaseLeftCount(countOccurrences(pair.getPalimentary(), sequence));
+      pair.getPalimentary().getOccurrences()
+          .increaseLeftCount(countProtonavs(pair.getPalimentary(), sequence));
       updateProgress(progress++, totalProgress);
     }
   }
 
-  private long countOccurrences(String pattern, String sequence) {
-    final Pattern p = Pattern.compile(Objects.requireNonNull(preparePatternForCount(pattern)));
+  private long countProtonavs(Protonav protonav, String sequence) {
+    final Pattern p = Pattern.compile(Objects.requireNonNull(prepareProtonavForCount(protonav)));
+    return countPattern(p, sequence);
+  }
+
+  private long countPattern(Pattern p, String sequence) {
     final Matcher m = p.matcher(sequence);
     long numberOfOccurrences = 0;
     while (m.find()) {
@@ -130,44 +167,54 @@ public class Analyzer extends Task<ParsedSequence> {
     return numberOfOccurrences;
   }
 
-  private String preparePatternForCount(String pattern) {
+  private String prepareProtonavForCount(Protonav protonav) {
     final StringBuilder patternBuilder = new StringBuilder("");
-
-    for (char ch : pattern.toCharArray()) {
-      switch (ch) {
-        case 'N':
-          patternBuilder.append("[ACGT]");
-          break;
-        case 'W':
-          patternBuilder.append("[AT]");
-          break;
-        case 'S':
-          patternBuilder.append("[CG]");
-          break;
-        case 'R':
-          patternBuilder.append("[AG]");
-          break;
-        case 'Y':
-          patternBuilder.append("[CT]");
-          break;
-        case 'B':
-          patternBuilder.append("[^A]");
-          break;
-        case 'D':
-          patternBuilder.append("[^C]");
-          break;
-        case 'H':
-          patternBuilder.append("[^G]");
-          break;
-        case 'V':
-          patternBuilder.append("[^T]");
-          break;
-        default:
-          patternBuilder.append(ch);
-      }
+    final String pattern = protonav.getPattern();
+    final int len = pattern.length();
+    long pairProbability = 1;
+    for (int index = 0; index < len; index++) {
+      patternBuilder.append(getAppropriateRegex(pattern.charAt(index)));
+      pairProbability *= parsedSequence.getPairsProbabilities()
+          .getOrDefault(pattern.substring(index, index + 2), (double) 1);
     }
-
+    protonav.setPairsProbability(pairProbability);
     return patternBuilder.toString();
+  }
+
+  private String getAppropriateRegex(char nucleotide) {
+    final String regex;
+    switch (nucleotide) {
+      case 'N':
+        regex = "[ACGT]";
+        break;
+      case 'W':
+        regex = "[AT]";
+        break;
+      case 'S':
+        regex = "[CG]";
+        break;
+      case 'R':
+        regex = "[AG]";
+        break;
+      case 'Y':
+        regex = "[CT]";
+        break;
+      case 'B':
+        regex = "[^A]";
+        break;
+      case 'D':
+        regex = "[^C]";
+        break;
+      case 'H':
+        regex = "[^G]";
+        break;
+      case 'V':
+        regex = "[^T]";
+        break;
+      default:
+        regex = String.valueOf(nucleotide);
+    }
+    return regex;
   }
 
 
@@ -261,79 +308,64 @@ public class Analyzer extends Task<ParsedSequence> {
         if (!generatedPatterns.contains(protonav)) {
           generatedPatterns.add(protonav);
 
-          long protonavProbability = 0;
-          long palimentaryProbability = 0;
+          double protonavProbability = 1;
+          double palimentaryProbability = 1;
 
           final char[] reversedProtonav = protonavBuilder.reverse().toString().toCharArray();
           final StringBuilder palimentaryBuilder = new StringBuilder("");
           for (char ch : reversedProtonav) {
-            protonavProbability += nucleotidesCount[ch - 'A'];
+            protonavProbability *= (nucleotidesProbabilities[ch - 'A']);
+
             final char nucleotide;
             switch (ch) {
               case 'A':
                 nucleotide = 'T';
-                // palimentaryBuilder.append("T");
                 break;
               case 'T':
                 nucleotide = 'A';
-                // palimentaryBuilder.append("A");
                 break;
               case 'C':
                 nucleotide = 'G';
-                // palimentaryBuilder.append("G");
                 break;
               case 'G':
                 nucleotide = 'C';
-                // palimentaryBuilder.append("C");
                 break;
               case 'W':
                 nucleotide = 'S';
-                // palimentaryBuilder.append("S");
                 break;
               case 'S':
                 nucleotide = 'W';
-                // palimentaryBuilder.append("W");
                 break;
               case 'R':
                 nucleotide = 'Y';
-                // palimentaryBuilder.append("Y");
                 break;
               case 'Y':
                 nucleotide = 'R';
-                // palimentaryBuilder.append("R");
                 break;
               case 'B':
                 nucleotide = 'V';
-                // palimentaryBuilder.append("V");
                 break;
               case 'V':
                 nucleotide = 'B';
-                // palimentaryBuilder.append("B");
                 break;
               case 'D':
                 nucleotide = 'H';
-                // palimentaryBuilder.append("H");
                 break;
               case 'H':
                 nucleotide = 'D';
-                // palimentaryBuilder.append("D");
                 break;
               default:
                 nucleotide = 'N';
-                // palimentaryBuilder.append(ch);
             }
             palimentaryBuilder.append(nucleotide);
-            palimentaryProbability += nucleotidesCount[nucleotide - 'A'];
+            palimentaryProbability *= nucleotidesProbabilities[nucleotide - 'A'];
           }
-          final ProtonavPair newPair = new ProtonavPair(protonav, palimentaryBuilder.toString());
-          newPair.setProtonavProbability(protonavProbability);
-          newPair.setPalimentaryProbability(palimentaryProbability);
+          final ProtonavPair newPair = new ProtonavPair(new Protonav(protonav, protonavProbability),
+              new Protonav(palimentaryBuilder.toString(), palimentaryProbability));
           protonavPairs.add(newPair);
         }
       }
     }
-    // System.out.println("\n\n\nCandidates with Regexes:");
-    // System.out.println(wildPatterns);
     return protonavPairs;
   }
 

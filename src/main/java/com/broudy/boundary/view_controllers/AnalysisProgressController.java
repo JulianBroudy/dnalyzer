@@ -4,14 +4,15 @@ import com.broudy.boundary.FXMLView;
 import com.broudy.control.FilesManager;
 import com.broudy.control.StageManager;
 import com.broudy.entity.Analyzer;
-import com.broudy.entity.Occurrences;
 import com.broudy.entity.ParsedSequence;
+import com.broudy.entity.Protonav;
 import com.broudy.entity.ProtonavPair;
 import com.broudy.entity.Sequence;
 import com.broudy.entity.SequenceParser;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -118,17 +119,25 @@ public class AnalysisProgressController {
     cell.setCellValue("Left Occurrences");
     cell = row.createCell(3);
     cell.setCellValue("Right Occurrences");
+    cell = row.createCell(4);
+    cell.setCellValue("Left Probability By Nucleotide");
+    cell = row.createCell(5);
+    cell.setCellValue("Right Probability By Nucleotide");
+    cell = row.createCell(6);
+    cell.setCellValue("Left Probability By Pairs");
+    cell = row.createCell(7);
+    cell.setCellValue("Right Probability By Pairs");
 
     for (ProtonavPair pair : results) {
       row = sheet.createRow(rowCount++);
       cell = row.createCell(0);
       cell.setCellValue(pair.getID());
-      writeRow(pair.getProtonav(), pair.getProtonavOccurrences(), row);
+      writeRow(pair.getProtonav(), row);
 
       row = sheet.createRow(rowCount++);
       cell = row.createCell(0);
       cell.setCellValue(pair.getID());
-      writeRow(pair.getPalimentary(), pair.getPalimentaryOccurrences(), row);
+      writeRow(pair.getPalimentary(), row);
     }
 
     fileChooser.setInitialFileName(parsedSequence.getHeader().substring(1) + ".xlsx");
@@ -141,15 +150,28 @@ public class AnalysisProgressController {
 
   }
 
-  private void writeRow(String protonav, Occurrences protonavOccurrences, XSSFRow row) {
+  private void writeRow(Protonav protonav, XSSFRow row) {
     XSSFCell cell = row.createCell(1);
-    cell.setCellValue(protonav);
+    cell.setCellValue(protonav.getPattern());
 
     cell = row.createCell(2);
-    cell.setCellValue(protonavOccurrences.getLeftCount().toString());
+    cell.setCellValue(protonav.getOccurrences().getLeftCount());
 
     cell = row.createCell(3);
-    cell.setCellValue(protonavOccurrences.getRightCount().toString());
+    cell.setCellValue(protonav.getOccurrences().getRightCount());
+
+    cell = row.createCell(4);
+    cell.setCellValue(protonav.getOccurrences().getLeftCount()/protonav.getProbability());
+
+    cell = row.createCell(5);
+    cell.setCellValue(protonav.getOccurrences().getRightCount()/protonav.getProbability());
+
+    cell = row.createCell(6);
+    cell.setCellValue(protonav.getOccurrences().getLeftCount()/protonav.getPairsProbability());
+
+    cell = row.createCell(7);
+    cell.setCellValue(protonav.getOccurrences().getRightCount()/protonav.getPairsProbability());
+
   }
 
 

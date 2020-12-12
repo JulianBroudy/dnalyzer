@@ -16,20 +16,16 @@ public class ProtonavPair {
   private static long PAIRS_COUNT = 0;
 
   private final long ID;
-  private final Protonav protonav;
-  private final Protonav palimentary;
+  private Protonav protonav;
+  private Protonav palimentary;
 
-  private long protonavProbability;
-  private long palimentaryProbability;
+  public ProtonavPair() {
+    this.ID = PAIRS_COUNT++;
+  }
 
-  private final Occurrences protonavOccurrences;
-  private final Occurrences palimentaryOccurrences;
-
-  public ProtonavPair(String protonav, String palimentary) {
+  public ProtonavPair(Protonav protonav, Protonav palimentary) {
     this.protonav = protonav;
     this.palimentary = palimentary;
-    this.protonavOccurrences = new Occurrences();
-    this.palimentaryOccurrences = new Occurrences();
     this.ID = PAIRS_COUNT++;
   }
 
@@ -47,7 +43,7 @@ public class ProtonavPair {
    *
    * @return protonav's value.
    */
-  public String getProtonav() {
+  public Protonav getProtonav() {
     return protonav;
   }
 
@@ -56,62 +52,8 @@ public class ProtonavPair {
    *
    * @return palimentary's value.
    */
-  public String getPalimentary() {
+  public Protonav getPalimentary() {
     return palimentary;
-  }
-
-  /**
-   * Gets the protonavProbability.
-   *
-   * @return protonavProbability's value.
-   */
-  public long getProtonavProbability() {
-    return protonavProbability;
-  }
-
-  /**
-   * Sets the protonavProbability.
-   *
-   * @param protonavProbability is the protonavProbability's new value.
-   */
-  public void setProtonavProbability(long protonavProbability) {
-    this.protonavProbability = protonavProbability;
-  }
-
-  /**
-   * Gets the palimentaryProbability.
-   *
-   * @return palimentaryProbability's value.
-   */
-  public long getPalimentaryProbability() {
-    return palimentaryProbability;
-  }
-
-  /**
-   * Sets the palimentaryProbability.
-   *
-   * @param palimentaryProbability is the palimentaryProbability's new value.
-   */
-  public void setPalimentaryProbability(long palimentaryProbability) {
-    this.palimentaryProbability = palimentaryProbability;
-  }
-
-  /**
-   * Gets the protonavOccurrences.
-   *
-   * @return protonavOccurrences's value.
-   */
-  public Occurrences getProtonavOccurrences() {
-    return protonavOccurrences;
-  }
-
-  /**
-   * Gets the palimentaryOccurrences.
-   *
-   * @return palimentaryOccurrences's value.
-   */
-  public Occurrences getPalimentaryOccurrences() {
-    return palimentaryOccurrences;
   }
 
   @Override
