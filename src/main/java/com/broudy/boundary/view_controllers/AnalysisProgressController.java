@@ -82,11 +82,15 @@ public class AnalysisProgressController {
             saveFile((ParsedSequence) done.getSource().getValue());
             stageManager.switchScene(FXMLView.MAIN_SCREEN);
           });
-          Thread thread = new Thread(analyzer);
-          thread.setDaemon(true);
-          progressBar.progressProperty().unbind();
-          progressBar.progressProperty().bind(analyzer.progressProperty());
-          thread.start();
+          try {
+            Thread thread = new Thread(analyzer);
+            thread.setDaemon(true);
+            progressBar.progressProperty().unbind();
+            progressBar.progressProperty().bind(analyzer.progressProperty());
+            thread.start();
+          }catch (Exception e){
+            System.out.println(e.getStackTrace());
+          }
         });
         Thread thread = new Thread(parser);
         thread.setDaemon(true);
