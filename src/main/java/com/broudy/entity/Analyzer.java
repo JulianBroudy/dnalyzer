@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -23,6 +22,7 @@ public class Analyzer extends Task<ParsedSequence> {
 
   private final ParsedSequence parsedSequence;
   private double[] nucleotidesProbabilities;
+  private HashMap<String, Double> pairingsProbabilities;
 
   public Analyzer(ParsedSequence parsedSequence) {
     this.parsedSequence = parsedSequence;
@@ -36,8 +36,9 @@ public class Analyzer extends Task<ParsedSequence> {
 
     nucleotidesProbabilities = getNucleotideProbabilities();
     parsedSequence.setNucleotidesProbabilities(nucleotidesProbabilities);
-    
 
+    pairingsProbabilities = getPairingsProbabilities();
+    parsedSequence.setPairsProbabilities(pairingsProbabilities);
 
     // 1. Get regexes for left side patterns
     final HashSet<String> simplePatterns = extractSimplePatterns(
@@ -62,13 +63,37 @@ public class Analyzer extends Task<ParsedSequence> {
 
     parsedSequence.setResults(protonavPairs);
 
-
     // Analyze right side
     return parsedSequence;
   }
 
-  private double[]
-  getNucleotideProbabilities() {
+  private HashMap<String, Double> getPairingsProbabilities() {
+    final HashMap<String, Double> pairingsProbabilities = new HashMap<>();
+
+    final char[] nucleotides = new char[]{'A', 'C', 'G', 'T'};
+    final StringBuilder stringBuilder = new StringBuilder();
+    for (char firstNucleotide : nucleotides) {
+      for (char secondNucleotide : nucleotides) {
+        pairingsProbabilities
+            .put(stringBuilder.append(firstNucleotide).append(secondNucleotide).toString(),
+                (double) 0);
+        stringBuilder.delete(0, 2);
+      }
+    }
+
+    final double totalCount = parsedSequence.getSequenceBeforeTargetSite().length() + parsedSequence
+        .getSequenceAfterTargetSite().length() - 1;
+    long occurrences;
+    for (String pair : pairingsProbabilities.keySet()) {
+      occurrences = countOccurrences(pair, parsedSequence.getSequenceBeforeTargetSite());
+      occurrences += countOccurrences(pair, parsedSequence.getSequenceAfterTargetSite());
+      pairingsProbabilities.put(pair, occurrences / totalCount);
+    }
+
+    return pairingsProbabilities;
+  }
+
+  private double[] getNucleotideProbabilities() {
     long[] count = new long[26];
 
     char[] sequence = parsedSequence.getSequenceBeforeTargetSite().toCharArray();
@@ -82,21 +107,13 @@ public class Analyzer extends Task<ParsedSequence> {
     double totalCount = parsedSequence.getSequenceBeforeTargetSite().length() + parsedSequence
         .getSequenceAfterTargetSite().length();
     double[] probabilities = new double[26];
-    // BigDecimal occurrences;
     for (int i = 0; i < 26; i++) {
       if (count[i] == 0) {
         probabilities[i] = 1;
       } else {
         probabilities[i] = count[i] / totalCount;
       }
-      // occurrences = BigDecimal.valueOf(count[i]);
-      // probabilities[i] = occurrences.divide(BigDecimal.valueOf(totalCount), RoundingMode.);
     }
-    // for (int i = 0; i < 26; i++) {
-    //   // if(probabilities[i].equals(BigDecimal.ZERO)){
-    //   //   probabilities[i] = BigDecimal.ONE;
-    //   // }
-    // }
 
     return probabilities;
   }
@@ -109,11 +126,11 @@ public class Analyzer extends Task<ParsedSequence> {
     updateProgress(progress++, totalProgress);
 
     for (ProtonavPair pair : allPatterns) {
-      pair.getProtonav().getOccurrences()
-          .increaseRightCount(countOccurrences(pair.getProtonav(), sequence));
+      pair.getProtonav().getOccurrences().increaseRightCount(
+          countOccurrences(preparePatternForCount(pair.getProtonav().getPattern()), sequence));
       updateProgress(progress++, totalProgress);
-      pair.getPalimentary().getOccurrences()
-          .increaseRightCount(countOccurrences(pair.getPalimentary(), sequence));
+      pair.getPalimentary().getOccurrences().increaseRightCount(
+          countOccurrences(preparePatternForCount(pair.getPalimentary().getPattern()), sequence));
       updateProgress(progress++, totalProgress);
     }
   }
@@ -124,18 +141,17 @@ public class Analyzer extends Task<ParsedSequence> {
     updateProgress(progress++, totalProgress);
 
     for (ProtonavPair pair : allPatterns) {
-      pair.getProtonav().getOccurrences()
-          .increaseLeftCount(countOccurrences(pair.getProtonav(), sequence));
+      pair.getProtonav().getOccurrences().increaseLeftCount(
+          countOccurrences(preparePatternForCount(pair.getProtonav().getPattern()), sequence));
       updateProgress(progress++, totalProgress);
-      pair.getPalimentary().getOccurrences()
-          .increaseLeftCount(countOccurrences(pair.getPalimentary(), sequence));
+      pair.getPalimentary().getOccurrences().increaseLeftCount(
+          countOccurrences(preparePatternForCount(pair.getPalimentary().getPattern()), sequence));
       updateProgress(progress++, totalProgress);
     }
   }
 
-  private long countOccurrences(Protonav protonav, String sequence) {
-    final Pattern p = Pattern
-        .compile(Objects.requireNonNull(preparePatternForCount(protonav.getPattern())));
+  private long countOccurrences(String pattern, String sequence) {
+    final Pattern p = Pattern.compile(pattern);
     final Matcher m = p.matcher(sequence);
     long numberOfOccurrences = 0;
     while (m.find()) {
