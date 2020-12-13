@@ -17,9 +17,10 @@ public class Protonav {
   private  double pairsProbability;
   private final Occurrences occurrences;
 
-  public Protonav(String pattern, double probability) {
+  public Protonav(String pattern, double probability,double pairsProbability) {
     this.pattern = pattern;
     this.probability = probability;
+    this.pairsProbability = pairsProbability;
     this.occurrences = new Occurrences();
   }
 

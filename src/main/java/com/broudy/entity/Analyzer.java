@@ -41,12 +41,16 @@ public class Analyzer extends Task<ParsedSequence> {
     parsedSequence.setPairsProbabilities(pairingsProbabilities);
 
     // 1. Get regexes for left side patterns
-    final HashSet<String> simplePatterns = extractSimplePatterns(
-        parsedSequence.getSequenceBeforeTargetSite());
-    updateProgress(1, 2);
+    final HashSet<String> simplePatterns = new HashSet<>();
+    System.out.println("size: "+simplePatterns.size());
+    extractSimplePatterns(simplePatterns, parsedSequence.getSequenceBeforeTargetSite());
+    System.out.println("size: "+simplePatterns.size());
+    extractSimplePatterns(simplePatterns, parsedSequence.getSequenceAfterTargetSite());
+    System.out.println("size: "+simplePatterns.size());
+    // updateProgress(1, 2);
 
     final HashSet<ProtonavPair> protonavPairs = generateWildPatterns(simplePatterns);
-    updateProgress(2, 2);
+    // updateProgress(2, 2);
 
     // final HashSet<ProtonavPair> protonavPairs = generateProtonavPairs(simplePatterns);
 
@@ -70,7 +74,7 @@ public class Analyzer extends Task<ParsedSequence> {
   private HashMap<String, Double> getPairingsProbabilities() {
     final HashMap<String, Double> pairingsProbabilities = new HashMap<>();
 
-    final char[] nucleotides = new char[]{'A', 'C', 'G', 'T'};
+    final char[] nucleotides = new char[]{'A', 'C', 'G', 'T', 'N', 'W', 'S', 'Y', 'R'};
     final StringBuilder stringBuilder = new StringBuilder();
     for (char firstNucleotide : nucleotides) {
       for (char secondNucleotide : nucleotides) {
@@ -81,13 +85,16 @@ public class Analyzer extends Task<ParsedSequence> {
       }
     }
 
-    final double totalCount = parsedSequence.getSequenceBeforeTargetSite().length() + parsedSequence
-        .getSequenceAfterTargetSite().length() - 1;
+    double totalCount = 0;
     long occurrences;
     for (String pair : pairingsProbabilities.keySet()) {
       occurrences = countOccurrences(pair, parsedSequence.getSequenceBeforeTargetSite());
       occurrences += countOccurrences(pair, parsedSequence.getSequenceAfterTargetSite());
-      pairingsProbabilities.put(pair, occurrences / totalCount);
+      pairingsProbabilities.put(pair, (occurrences == 0) ? 1 : (double) occurrences);
+      totalCount += occurrences;
+    }
+    for (String pair : pairingsProbabilities.keySet()) {
+      pairingsProbabilities.put(pair, pairingsProbabilities.get(pair) / totalCount);
     }
 
     return pairingsProbabilities;
@@ -206,24 +213,14 @@ public class Analyzer extends Task<ParsedSequence> {
   }
 
 
-  private HashMap<String, HashMap<String, Occurrences>> analyzeSequence(String sequence) {
-
-    // simplePatterns.entrySet().stream().sorted(Map.Entry.comparingByValue())
-    //     .forEach(System.out::println);
-    // final HashMap<String, HashMap<String, Occurrences>> wildPatterns = generateWildPatterns(
-    //     simplePatterns.keySet());
-
-    return null;
+  private HashSet<String> extractSimplePatterns(HashSet<String> simplePatterns, String sequence) {
+    return extractSimplePatterns(simplePatterns, sequence, 3, 7);
   }
 
+  private HashSet<String> extractSimplePatterns(HashSet<String> simplePatterns, String sequence,
+      int minLength, int maxLength) {
 
-  private HashSet<String> extractSimplePatterns(String sequence) {
-    return extractSimplePatterns(sequence, 3, 7);
-  }
-
-  private HashSet<String> extractSimplePatterns(String sequence, int minLength, int maxLength) {
-
-    final HashSet<String> simplePatterns = new HashSet<>();
+    // final HashSet<String> simplePatterns = new HashSet<>();
 
     final int length = sequence.length();
     final int firstLoopLength = length - maxLength + 1;
@@ -297,13 +294,17 @@ public class Analyzer extends Task<ParsedSequence> {
           generatedPatterns.add(protonav);
 
           double protonavProbability = 1;
+          final StringBuilder palimentaryBuilder = new StringBuilder("");
           double palimentaryProbability = 1;
 
-          final char[] reversedProtonav = protonavBuilder.reverse().toString().toCharArray();
-          final StringBuilder palimentaryBuilder = new StringBuilder("");
-          for (char ch : reversedProtonav) {
-            protonavProbability *= (nucleotidesProbabilities[ch - 'A']);
+          final StringBuilder pairBuilder = new StringBuilder();
+          double protonavPairProbability = 1;
+          double palimentaryPairProbability = 1;
+          char previousNucleotide = 'N';
 
+          final char[] protonavArray = protonav.toCharArray();
+          for (char ch : protonavArray) {
+            protonavProbability *= (nucleotidesProbabilities[ch - 'A']);
             final char nucleotide;
             switch (ch) {
               case 'A':
@@ -347,9 +348,21 @@ public class Analyzer extends Task<ParsedSequence> {
             }
             palimentaryBuilder.append(nucleotide);
             palimentaryProbability *= nucleotidesProbabilities[nucleotide - 'A'];
+
+            protonavPairProbability *= pairingsProbabilities
+                .getOrDefault(pairBuilder.append(previousNucleotide).append(ch).toString(),
+                    (double) 1);
+            palimentaryPairProbability *= pairingsProbabilities
+                .getOrDefault(pairBuilder.reverse().toString(), (double) 1);
+
+            previousNucleotide = ch;
+
+            pairBuilder.delete(0, 2);
           }
-          final ProtonavPair newPair = new ProtonavPair(new Protonav(protonav, protonavProbability),
-              new Protonav(palimentaryBuilder.toString(), palimentaryProbability));
+          final ProtonavPair newPair = new ProtonavPair(
+              new Protonav(protonav, protonavProbability, protonavPairProbability),
+              new Protonav(palimentaryBuilder.reverse().toString(), palimentaryProbability,
+                  palimentaryPairProbability));
           protonavPairs.add(newPair);
         }
       }
