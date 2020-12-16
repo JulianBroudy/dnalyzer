@@ -4,7 +4,7 @@ import com.broudy.boundary.FXMLView;
 import com.broudy.boundary.RenderingsStyler;
 import com.broudy.control.FilesManager;
 import com.broudy.control.StageManager;
-import com.broudy.entity.Sequence;
+import com.broudy.entity.SequenceToBeParsed;
 import java.io.File;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -52,7 +52,7 @@ public class TargetSitesSelectionController {
   private CheckBox noCB;
 
   @FXML
-  private ListView<Sequence> matchedLV;
+  private ListView<SequenceToBeParsed> matchedLV;
 
   @FXML
   private Button unmatchBTN;
@@ -122,7 +122,7 @@ public class TargetSitesSelectionController {
 
       }*/
 
-      final Sequence matchedSequence = new Sequence(unmatchedCB.getValue(), startIndexTF.getText(),
+      final SequenceToBeParsed matchedSequence = new SequenceToBeParsed(unmatchedCB.getValue(), startIndexTF.getText(),
           endIndexTF.getText(), yesCB.isSelected());
       filesManager.getMatchedSequences().add(matchedSequence);
 

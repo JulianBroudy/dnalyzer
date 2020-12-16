@@ -29,7 +29,7 @@
                   <VBox alignment="CENTER_LEFT" spacing="5.0" HBox.hgrow="ALWAYS">
                      <children>
                         <Label text="DNA sequences to be matched:" />
-                        <ComboBox fx:id="unmatchedCB" maxWidth="1.7976931348623157E308" promptText="Select 1st sequence to match" VBox.vgrow="NEVER">
+                        <ComboBox fx:id="unmatchedCB" maxWidth="1.7976931348623157E308" promptText="Select 1st sequenceToBeParsed to match" VBox.vgrow="NEVER">
                            <VBox.margin>
                               <Insets />
                            </VBox.margin>
@@ -41,7 +41,7 @@
                         </Separator>
                         <HBox prefHeight="100.0" prefWidth="200.0" VBox.vgrow="NEVER">
                            <children>
-                              <Label text="Is the sequence cyclic?" />
+                              <Label text="Is the sequenceToBeParsed cyclic?" />
                               <CheckBox fx:id="yesCB" mnemonicParsing="false" text="Yes">
                                  <HBox.margin>
                                     <Insets left="30.0" />
@@ -95,7 +95,7 @@
                            </children>
                         </HBox>
                         <Region layoutX="10.0" layoutY="166.0" prefHeight="200.0" prefWidth="200.0" />
-                        <Button fx:id="uploadTargetSiteBTN" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Upload target-site sequence" />
+                        <Button fx:id="uploadTargetSiteBTN" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Upload target-site sequenceToBeParsed" />
                      </children>
                      <HBox.margin>
                         <Insets />

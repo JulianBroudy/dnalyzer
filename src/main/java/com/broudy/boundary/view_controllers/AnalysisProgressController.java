@@ -7,12 +7,11 @@ import com.broudy.entity.Analyzer;
 import com.broudy.entity.ParsedSequence;
 import com.broudy.entity.Protonav;
 import com.broudy.entity.ProtonavPair;
-import com.broudy.entity.Sequence;
+import com.broudy.entity.SequenceToBeParsed;
 import com.broudy.entity.SequenceParser;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -72,8 +71,8 @@ public class AnalysisProgressController {
     startBTN.setOnAction(click -> {
       // Parse files
       final List<ParsedSequence> parsedSequences = new ArrayList<>();
-      for (Sequence sequence : filesManager.getMatchedSequences()) {
-        final SequenceParser parser = new SequenceParser(sequence);
+      for (SequenceToBeParsed sequenceToBeParsed : filesManager.getMatchedSequences()) {
+        final SequenceParser parser = new SequenceParser(sequenceToBeParsed);
         parser.setOnSucceeded(succeeded -> {
           parsedSequences.add((ParsedSequence) succeeded.getSource().getValue());
           final Analyzer analyzer = new Analyzer((ParsedSequence) succeeded.getSource().getValue());

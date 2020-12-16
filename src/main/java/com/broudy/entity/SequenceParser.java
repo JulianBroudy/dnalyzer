@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import javafx.concurrent.Task;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -22,9 +23,9 @@ public class SequenceParser extends Task<ParsedSequence> {
 
   private static final Logger LOGGER = LogManager.getLogger(SequenceParser.class);
 
-  private final Sequence sequenceToBeParsed;
+  private final SequenceToBeParsed sequenceToBeParsed;
 
-  public SequenceParser(Sequence sequenceToBeParsed) {
+  public SequenceParser(SequenceToBeParsed sequenceToBeParsed) {
     this.sequenceToBeParsed = sequenceToBeParsed;
   }
 
@@ -98,13 +99,13 @@ public class SequenceParser extends Task<ParsedSequence> {
           sequence.substring(sequenceToBeParsed.getEndIndex() + 1));
     }
     System.out.println("Target Site:\t" + parsedSequence.getTargetSite());
-    // System.out.println(
-    //     "Start: " + sequenceToBeParsed.getStartIndex() + "\tEnd: " + sequenceToBeParsed
-    //         .getEndIndex());
-    System.out.println("Before: "+parsedSequence.getSequenceBeforeTargetSite().length()
-    +"\tAfter: "+parsedSequence.getSequenceAfterTargetSite().length());
+    System.out.println("Before: "+parsedSequence.getLeftSequence().getSequence().length()
+    +"\tAfter: "+parsedSequence.getRightSequence().getSequence().length());
     updateProgress(1, 1);
     updateTitle("Done");
+
     return LOGGER.traceExit("Parsed sequence: {}", parsedSequence);
   }
+
+
 }

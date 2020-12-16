@@ -71,59 +71,6 @@ public class Analyzer extends Task<ParsedSequence> {
     return parsedSequence;
   }
 
-  private HashMap<String, Double> getPairingsProbabilities() {
-    final HashMap<String, Double> pairingsProbabilities = new HashMap<>();
-
-    final char[] nucleotides = new char[]{'A', 'C', 'G', 'T', 'N', 'W', 'S', 'Y', 'R'};
-    final StringBuilder stringBuilder = new StringBuilder();
-    for (char firstNucleotide : nucleotides) {
-      for (char secondNucleotide : nucleotides) {
-        pairingsProbabilities
-            .put(stringBuilder.append(firstNucleotide).append(secondNucleotide).toString(),
-                (double) 0);
-        stringBuilder.delete(0, 2);
-      }
-    }
-
-    double totalCount = 0;
-    long occurrences;
-    for (String pair : pairingsProbabilities.keySet()) {
-      occurrences = countOccurrences(pair, parsedSequence.getSequenceBeforeTargetSite());
-      occurrences += countOccurrences(pair, parsedSequence.getSequenceAfterTargetSite());
-      pairingsProbabilities.put(pair, (occurrences == 0) ? 1 : (double) occurrences);
-      totalCount += occurrences;
-    }
-    for (String pair : pairingsProbabilities.keySet()) {
-      pairingsProbabilities.put(pair, pairingsProbabilities.get(pair) / totalCount);
-    }
-
-    return pairingsProbabilities;
-  }
-
-  private double[] getNucleotideProbabilities() {
-    long[] count = new long[26];
-
-    char[] sequence = parsedSequence.getSequenceBeforeTargetSite().toCharArray();
-    for (char ch : sequence) {
-      count[ch - 'A']++;
-    }
-    sequence = parsedSequence.getSequenceAfterTargetSite().toCharArray();
-    for (char ch : sequence) {
-      count[ch - 'A']++;
-    }
-    double totalCount = parsedSequence.getSequenceBeforeTargetSite().length() + parsedSequence
-        .getSequenceAfterTargetSite().length();
-    double[] probabilities = new double[26];
-    for (int i = 0; i < 26; i++) {
-      if (count[i] == 0) {
-        probabilities[i] = 1;
-      } else {
-        probabilities[i] = count[i] / totalCount;
-      }
-    }
-
-    return probabilities;
-  }
 
 
   private void countOccurrencesForRightOf(String sequence, HashSet<ProtonavPair> allPatterns) {
@@ -157,60 +104,6 @@ public class Analyzer extends Task<ParsedSequence> {
     }
   }
 
-  private long countOccurrences(String pattern, String sequence) {
-    final Pattern p = Pattern.compile(pattern);
-    final Matcher m = p.matcher(sequence);
-    long numberOfOccurrences = 0;
-    while (m.find()) {
-      final int groupCount = m.groupCount();
-      for (int i = 0; i <= groupCount; i++) {
-        if (!m.group(i).isEmpty()) {
-          numberOfOccurrences++;
-        }
-      }
-    }
-    return numberOfOccurrences;
-  }
-
-  private String preparePatternForCount(String pattern) {
-    final StringBuilder patternBuilder = new StringBuilder("");
-
-    for (char ch : pattern.toCharArray()) {
-      switch (ch) {
-        case 'N':
-          patternBuilder.append("[ACGT]");
-          break;
-        case 'W':
-          patternBuilder.append("[AT]");
-          break;
-        case 'S':
-          patternBuilder.append("[CG]");
-          break;
-        case 'R':
-          patternBuilder.append("[AG]");
-          break;
-        case 'Y':
-          patternBuilder.append("[CT]");
-          break;
-        case 'B':
-          patternBuilder.append("[^A]");
-          break;
-        case 'D':
-          patternBuilder.append("[^C]");
-          break;
-        case 'H':
-          patternBuilder.append("[^G]");
-          break;
-        case 'V':
-          patternBuilder.append("[^T]");
-          break;
-        default:
-          patternBuilder.append(ch);
-      }
-    }
-
-    return patternBuilder.toString();
-  }
 
 
   private HashSet<String> extractSimplePatterns(HashSet<String> simplePatterns, String sequence) {

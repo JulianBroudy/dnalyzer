@@ -1,78 +1,38 @@
 package com.broudy.entity;
 
-import java.io.File;
-
 /**
- * TODO provide a summary to Sequence class!!!!!
+ * This class represents a DNA sequence including its nucleotides' probabilities.
  * <p>
- * Created on the 23rd of November, 2020.
+ * Created on the 16th of December, 2020.
  *
  * @author <a href="https://github.com/JulianBroudy"><b>Julian Broudy</b></a>
  */
 public class Sequence {
 
-  private final File dnaSequence;
-  private File targetFile;
-  private int startIndex, endIndex;
-  private boolean isCyclic;
+  private final String sequence;
+  private final NucleotideProbabilities nucleotideProbabilities;
 
-  public Sequence(File dnaSequence, int startIndex, int endIndex, boolean isCyclic) {
-    this.dnaSequence = dnaSequence;
-    this.startIndex = startIndex;
-    this.endIndex = endIndex;
-    this.isCyclic = isCyclic;
-  }
-
-  public Sequence(File dnaSequence, String startIndex, String endIndex, boolean isCyclic) {
-    this(dnaSequence, Integer.parseInt(startIndex), Integer.parseInt(endIndex), isCyclic);
+  public Sequence(String sequence) {
+    this.sequence = sequence;
+    this.nucleotideProbabilities = new NucleotideProbabilities(sequence);
   }
 
 
   /**
-   * Gets the file.
+   * Gets the sequence.
    *
-   * @return file's value.
+   * @return sequence's value.
    */
-  public File getDnaSequence() {
-    return dnaSequence;
+  public String getSequence() {
+    return sequence;
   }
 
   /**
-   * Gets the targetFile.
+   * Gets the nucleotideProbabilities.
    *
-   * @return targetFile's value.
+   * @return nucleotideProbabilities's value.
    */
-  public File getTargetFile() {
-    return targetFile;
-  }
-
-  /**
-   * Gets the startIndex.
-   *
-   * @return startIndex's value.
-   */
-  public int getStartIndex() {
-    return startIndex;
-  }
-
-  /**
-   * Gets the endIndex.
-   *
-   * @return endIndex's value.
-   */
-  public int getEndIndex() {
-    return endIndex;
-  }
-
-  /**
-   * Gets the isCyclic.
-   *
-   * @return isCyclic's value.
-   */
-  public boolean isCyclic() {
-    return isCyclic;
+  public NucleotideProbabilities getNucleotideProbabilities() {
+    return nucleotideProbabilities;
   }
 }
-
-
-
