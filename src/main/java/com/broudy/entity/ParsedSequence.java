@@ -1,5 +1,6 @@
 package com.broudy.entity;
 
+import com.broudy.entity.Sequence.SequenceSide;
 import java.util.HashSet;
 
 /**
@@ -23,8 +24,8 @@ public class ParsedSequence {
       String sequenceAfterTargetSite) {
     this.header = header;
     this.targetSite = targetSite;
-    this.leftSequence = new Sequence(sequenceBeforeTargetSite);
-    this.rightSequence = new Sequence(sequenceAfterTargetSite);
+    this.leftSequence = new Sequence(SequenceSide.LEFT, sequenceBeforeTargetSite);
+    this.rightSequence = new Sequence(SequenceSide.RIGHT, sequenceAfterTargetSite);
   }
 
   /**

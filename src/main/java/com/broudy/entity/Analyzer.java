@@ -34,11 +34,6 @@ public class Analyzer extends Task<ParsedSequence> {
     // Analyze left side
     updateProgress(0, 2);
 
-    nucleotidesProbabilities = getNucleotideProbabilities();
-    parsedSequence.setNucleotidesProbabilities(nucleotidesProbabilities);
-
-    pairingsProbabilities = getPairingsProbabilities();
-    parsedSequence.setPairsProbabilities(pairingsProbabilities);
 
     // 1. Get regexes for left side patterns
     final HashSet<String> simplePatterns = new HashSet<>();

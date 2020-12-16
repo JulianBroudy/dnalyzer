@@ -9,14 +9,24 @@ package com.broudy.entity;
  */
 public class Sequence {
 
+  private final SequenceSide side;
   private final String sequence;
   private final NucleotideProbabilities nucleotideProbabilities;
 
-  public Sequence(String sequence) {
+  public Sequence(SequenceSide side, String sequence) {
+    this.side = side;
     this.sequence = sequence;
     this.nucleotideProbabilities = new NucleotideProbabilities(sequence);
   }
 
+  /**
+   * Gets the side.
+   *
+   * @return side's value.
+   */
+  public SequenceSide getSide() {
+    return side;
+  }
 
   /**
    * Gets the sequence.
@@ -34,5 +44,9 @@ public class Sequence {
    */
   public NucleotideProbabilities getNucleotideProbabilities() {
     return nucleotideProbabilities;
+  }
+
+  enum SequenceSide{
+    LEFT,RIGHT
   }
 }
