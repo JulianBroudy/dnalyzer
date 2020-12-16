@@ -170,16 +170,16 @@ public class AnalysisProgressController {
     cell.setCellValue(protonav.getOccurrences().getRightCount());
 
     cell = row.createCell(5);
-    cell.setCellValue(protonav.getOccurrences().getLeftCount()/protonav.getProbability());
+    cell.setCellValue(protonav.getOccurrences().getLeftCount()/protonav.getProbabilityBySingles());
 
     cell = row.createCell(6);
-    cell.setCellValue(protonav.getOccurrences().getRightCount()/protonav.getProbability());
+    cell.setCellValue(protonav.getOccurrences().getRightCount()/protonav.getProbabilityBySingles());
 
     cell = row.createCell(7);
-    cell.setCellValue(protonav.getOccurrences().getLeftCount()/protonav.getPairsProbability());
+    cell.setCellValue(protonav.getOccurrences().getLeftCount()/protonav.getProbabilityByPairs());
 
     cell = row.createCell(8);
-    cell.setCellValue(protonav.getOccurrences().getRightCount()/protonav.getPairsProbability());
+    cell.setCellValue(protonav.getOccurrences().getRightCount()/protonav.getProbabilityByPairs());
 
   }
 

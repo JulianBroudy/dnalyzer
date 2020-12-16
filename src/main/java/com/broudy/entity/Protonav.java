@@ -1,7 +1,5 @@
 package com.broudy.entity;
 
-import java.math.BigDecimal;
-
 /**
  * This class represents a Protonav that includes the pattern, occurrences and the probability of
  * this pattern.
@@ -13,14 +11,14 @@ import java.math.BigDecimal;
 public class Protonav {
 
   private final String pattern;
-  private final double probability;
-  private  double pairsProbability;
+  private final double probabilityBySingles;
+  private double probabilityByPairs;
   private final Occurrences occurrences;
 
-  public Protonav(String pattern, double probability,double pairsProbability) {
+  public Protonav(String pattern, double probability, double probabilityByPairs) {
     this.pattern = pattern;
-    this.probability = probability;
-    this.pairsProbability = pairsProbability;
+    this.probabilityBySingles = probability;
+    this.probabilityByPairs = probabilityByPairs;
     this.occurrences = new Occurrences();
   }
 
@@ -38,8 +36,8 @@ public class Protonav {
    *
    * @return probability's value.
    */
-  public double getProbability() {
-    return probability;
+  public double getProbabilityBySingles() {
+    return probabilityBySingles;
   }
 
   /**
@@ -47,17 +45,17 @@ public class Protonav {
    *
    * @return pairsProbability's value.
    */
-  public double getPairsProbability() {
-    return pairsProbability;
+  public double getProbabilityByPairs() {
+    return probabilityByPairs;
   }
 
   /**
    * Sets the pairsProbability.
    *
-   * @param pairsProbability is the pairsProbability's new value.
+   * @param probabilityByPairs is the pairsProbability's new value.
    */
-  public void setPairsProbability(double pairsProbability) {
-    this.pairsProbability = pairsProbability;
+  public void setProbabilityByPairs(double probabilityByPairs) {
+    this.probabilityByPairs = probabilityByPairs;
   }
 
   /**
