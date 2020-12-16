@@ -60,11 +60,6 @@ public class Analyzer extends Task<ParsedSequence> {
     return parsedSequence;
   }
 
-  private void start() {
-
-
-  }
-
   private void countOccurrences(List<ProtonavPair> protonavPairs) {
 
     long progress = 0;

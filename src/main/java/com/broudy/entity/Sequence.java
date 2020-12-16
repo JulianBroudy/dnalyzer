@@ -60,7 +60,7 @@ public class Sequence {
     return nucleotideProbabilities;
   }
 
-  enum SequenceSide {
+  public enum SequenceSide {
     LEFT, RIGHT
   }
 }
