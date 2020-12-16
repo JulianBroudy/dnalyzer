@@ -1,5 +1,8 @@
 package com.broudy.entity;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * This class represents a DNA sequence including its nucleotides' probabilities.
  * <p>
@@ -11,11 +14,13 @@ public class Sequence {
 
   private final SequenceSide side;
   private final String sequence;
+  private final List<Protonav> protonavs;
   private final NucleotideProbabilities nucleotideProbabilities;
 
   public Sequence(SequenceSide side, String sequence) {
     this.side = side;
     this.sequence = sequence;
+    this.protonavs = new ArrayList<>();
     this.nucleotideProbabilities = new NucleotideProbabilities(sequence);
   }
 
@@ -35,6 +40,15 @@ public class Sequence {
    */
   public String getSequence() {
     return sequence;
+  }
+
+  /**
+   * Gets the protonavs.
+   *
+   * @return protonavs's value.
+   */
+  public List<Protonav> getProtonavs() {
+    return protonavs;
   }
 
   /**
