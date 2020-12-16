@@ -11,13 +11,15 @@ import java.util.HashMap;
  */
 public class NucleotideProbabilities {
 
+  private long totalNumberOfNucleotides;
   private double[] probabilitiesOfSingles;
   private HashMap<String, Double> probabilitiesOfPairs;
 
   public NucleotideProbabilities(String inThisSequence) {
+    probabilitiesOfSingles = new double[26];
+    totalNumberOfNucleotides = ProbabilitiesCalculator
+        .calculateProbabilitiesOfSingles(inThisSequence, probabilitiesOfSingles);
     probabilitiesOfPairs = ProbabilitiesCalculator.calculateProbabilitiesOfPairs(inThisSequence);
-    probabilitiesOfSingles = ProbabilitiesCalculator
-        .calculateProbabilitiesOfSingles(inThisSequence);
   }
 
   /**
@@ -57,11 +59,21 @@ public class NucleotideProbabilities {
   }
 
   /**
+   * Gets the totalNumberOfNucleotides.
+   *
+   * @return totalNumberOfNucleotides's value.
+   */
+  public long getTotalNumberOfNucleotides() {
+    return totalNumberOfNucleotides;
+  }
+
+  /**
    * Helper class to encapsulate the process of calculating the probabilities of a sequence.
    */
   static class ProbabilitiesCalculator {
 
-    public static double[] calculateProbabilitiesOfSingles(String inThisSequence) {
+    public static long calculateProbabilitiesOfSingles(String inThisSequence,
+        double[] probabilities) {
       long[] count = new long[26];
 
       final char[] sequence = inThisSequence.toCharArray();
@@ -69,16 +81,16 @@ public class NucleotideProbabilities {
         count[ch - 'A']++;
       }
 
-      double totalCount = 0;
+      long totalCount = 0;
       for (long occurrences : count) {
         totalCount += occurrences;
       }
 
-      double[] probabilities = new double[26];
+      // double[] probabilities = new double[26];
       for (int i = 0; i < 26; i++) {
-        probabilities[i] = count[i] == 0 ? 1 : count[i] / totalCount;
+        probabilities[i] = count[i] == 0 ? 1 : (double) count[i] / totalCount;
       }
-      return probabilities;
+      return totalCount;
     }
 
     static HashMap<String, Double> calculateProbabilitiesOfPairs(String sequence) {

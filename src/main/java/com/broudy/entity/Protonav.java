@@ -12,12 +12,12 @@ public class Protonav {
 
   private final String pattern;
   private final double probabilityBySingles;
-  private double probabilityByPairs;
+  private final double probabilityByPairs;
   private final Occurrences occurrences;
 
-  public Protonav(String pattern, double probability, double probabilityByPairs) {
+  public Protonav(String pattern, double probabilityBySingles, double probabilityByPairs) {
     this.pattern = pattern;
-    this.probabilityBySingles = probability;
+    this.probabilityBySingles = probabilityBySingles;
     this.probabilityByPairs = probabilityByPairs;
     this.occurrences = new Occurrences();
   }
@@ -47,15 +47,6 @@ public class Protonav {
    */
   public double getProbabilityByPairs() {
     return probabilityByPairs;
-  }
-
-  /**
-   * Sets the pairsProbability.
-   *
-   * @param probabilityByPairs is the pairsProbability's new value.
-   */
-  public void setProbabilityByPairs(double probabilityByPairs) {
-    this.probabilityByPairs = probabilityByPairs;
   }
 
   /**

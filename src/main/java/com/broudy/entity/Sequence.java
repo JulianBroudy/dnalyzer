@@ -14,7 +14,7 @@ public class Sequence {
 
   private final SequenceSide side;
   private final String sequence;
-  private final List<Protonav> protonavs;
+  private final List<ProtonavPair> protonavs;
   private final NucleotideProbabilities nucleotideProbabilities;
 
   public Sequence(SequenceSide side, String sequence) {
@@ -47,7 +47,7 @@ public class Sequence {
    *
    * @return protonavs's value.
    */
-  public List<Protonav> getProtonavs() {
+  public List<ProtonavPair> getProtonavs() {
     return protonavs;
   }
 
@@ -60,7 +60,7 @@ public class Sequence {
     return nucleotideProbabilities;
   }
 
-  enum SequenceSide{
-    LEFT,RIGHT
+  enum SequenceSide {
+    LEFT, RIGHT
   }
 }
