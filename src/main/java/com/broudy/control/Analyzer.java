@@ -1,5 +1,9 @@
-package com.broudy.entity;
+package com.broudy.control;
 
+import com.broudy.entity.ParsedSequence;
+import com.broudy.entity.Protonav;
+import com.broudy.entity.ProtonavPair;
+import com.broudy.entity.Sequence;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -31,7 +35,8 @@ public class Analyzer extends Task<ParsedSequence> {
 
     //  Get patterns from left sequence
     HashSet<String> simplePatterns = extractSimplePatterns(
-        parsedSequence.getLeftSequence().getSequence());
+        parsedSequence.getLeftSequence().getSequence(), parsedSequence.getMinPatternLength(),
+        parsedSequence.getMaxPatternLength());
 
     // Generate protonav pairs
     List<ProtonavPair> protonavPairs = generateProtonavPairs(simplePatterns,
@@ -42,21 +47,16 @@ public class Analyzer extends Task<ParsedSequence> {
     parsedSequence.getLeftSequence().getProtonavs().addAll(protonavPairs);
 
     //  Get patterns from left sequence
-    simplePatterns = extractSimplePatterns(
-        parsedSequence.getRightSequence().getSequence());
+    simplePatterns = extractSimplePatterns(parsedSequence.getRightSequence().getSequence(),
+        parsedSequence.getMinPatternLength(), parsedSequence.getMaxPatternLength());
 
     // Generate protonav pairs
-    protonavPairs = generateProtonavPairs(simplePatterns,
-        parsedSequence.getRightSequence());
+    protonavPairs = generateProtonavPairs(simplePatterns, parsedSequence.getRightSequence());
 
     //  Count on left side
     countOccurrences(protonavPairs);
     parsedSequence.getRightSequence().getProtonavs().addAll(protonavPairs);
 
-
-    // parsedSequence.setResults(protonavPairs);
-
-    // Analyze right side
     return parsedSequence;
   }
 
@@ -70,11 +70,11 @@ public class Analyzer extends Task<ParsedSequence> {
     PatternCounter patternCounter = new PatternCounter();
 
     for (ProtonavPair protonavPair : protonavPairs) {
-      protonavPair.getProtonav().getOccurrences().increaseLeftCount(patternCounter
-          .countOccurrences(protonavPair.getProtonav().getPattern(), leftSequence));
+      protonavPair.getProtonav().getOccurrences().increaseLeftCount(
+          patternCounter.countOccurrences(protonavPair.getProtonav().getPattern(), leftSequence));
       updateProgress(progress++, totalProgress);
-      protonavPair.getProtonav().getOccurrences().increaseRightCount(patternCounter
-          .countOccurrences(protonavPair.getProtonav().getPattern(), rightSequence));
+      protonavPair.getProtonav().getOccurrences().increaseRightCount(
+          patternCounter.countOccurrences(protonavPair.getProtonav().getPattern(), rightSequence));
       updateProgress(progress++, totalProgress);
 
       protonavPair.getPalimentary().getOccurrences().increaseLeftCount(patternCounter
@@ -164,11 +164,6 @@ public class Analyzer extends Task<ParsedSequence> {
     return nucleotide;
   }
 
-
-  private HashSet<String> extractSimplePatterns(String sequence) {
-    return extractSimplePatterns(sequence, 3, 7);
-  }
-
   private HashSet<String> extractSimplePatterns(String sequence, int minLength, int maxLength) {
 
     final HashSet<String> simplePatterns = new HashSet<>();
@@ -203,7 +198,6 @@ public class Analyzer extends Task<ParsedSequence> {
 
     return simplePatterns;
   }
-
 
   // private void countOccurrencesForRightOf(String sequence, HashSet<ProtonavPair> allPatterns) {
   //

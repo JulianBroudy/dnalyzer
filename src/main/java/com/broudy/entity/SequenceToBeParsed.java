@@ -15,16 +15,22 @@ public class SequenceToBeParsed {
   private File targetFile;
   private int startIndex, endIndex;
   private boolean isCyclic;
+  private final int minPatternLength, maxPatternLength;
 
-  public SequenceToBeParsed(File dnaSequence, int startIndex, int endIndex, boolean isCyclic) {
+  public SequenceToBeParsed(File dnaSequence, int startIndex, int endIndex, boolean isCyclic,
+      int minPatternLength, int maxPatternLength) {
     this.dnaSequence = dnaSequence;
     this.startIndex = startIndex;
     this.endIndex = endIndex;
     this.isCyclic = isCyclic;
+    this.minPatternLength = minPatternLength;
+    this.maxPatternLength = maxPatternLength;
   }
 
-  public SequenceToBeParsed(File dnaSequence, String startIndex, String endIndex, boolean isCyclic) {
-    this(dnaSequence, Integer.parseInt(startIndex), Integer.parseInt(endIndex), isCyclic);
+  public SequenceToBeParsed(File dnaSequence, String startIndex, String endIndex, boolean isCyclic,
+      int minPatternLength, int maxPatternLength) {
+    this(dnaSequence, Integer.parseInt(startIndex), Integer.parseInt(endIndex), isCyclic,
+        minPatternLength, maxPatternLength);
   }
 
 
@@ -71,6 +77,24 @@ public class SequenceToBeParsed {
    */
   public boolean isCyclic() {
     return isCyclic;
+  }
+
+  /**
+   * Gets the minPatternLength.
+   *
+   * @return minPatternLength's value.
+   */
+  public int getMinPatternLength() {
+    return minPatternLength;
+  }
+
+  /**
+   * Gets the maxPatternLength.
+   *
+   * @return maxPatternLength's value.
+   */
+  public int getMaxPatternLength() {
+    return maxPatternLength;
   }
 }
 

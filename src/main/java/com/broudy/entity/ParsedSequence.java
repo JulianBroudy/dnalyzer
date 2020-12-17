@@ -1,7 +1,6 @@
 package com.broudy.entity;
 
 import com.broudy.entity.Sequence.SequenceSide;
-import java.util.HashSet;
 
 /**
  * This class represents a parsed sequence file which contains the sequenceUnderTest header, target
@@ -17,15 +16,17 @@ public class ParsedSequence {
   private final String targetSite;
   private final Sequence leftSequence;
   private final Sequence rightSequence;
-  private HashSet<ProtonavPair> results;
+  private final int minPatternLength, maxPatternLength;
 
 
   public ParsedSequence(String header, String sequenceBeforeTargetSite, String targetSite,
-      String sequenceAfterTargetSite) {
+      String sequenceAfterTargetSite, int minPatternLength, int maxPatternLength) {
     this.header = header;
     this.targetSite = targetSite;
     this.leftSequence = new Sequence(SequenceSide.LEFT, sequenceBeforeTargetSite);
     this.rightSequence = new Sequence(SequenceSide.RIGHT, sequenceAfterTargetSite);
+    this.minPatternLength = minPatternLength;
+    this.maxPatternLength = maxPatternLength;
   }
 
   /**
@@ -65,21 +66,21 @@ public class ParsedSequence {
   }
 
   /**
-   * Gets the results.
+   * Gets the minPatternLength.
    *
-   * @return results's value.
+   * @return minPatternLength's value.
    */
-  public HashSet<ProtonavPair> getResults() {
-    return results;
+  public int getMinPatternLength() {
+    return minPatternLength;
   }
 
   /**
-   * Sets the results.
+   * Gets the maxPatternLength.
    *
-   * @param results is the results's new value.
+   * @return maxPatternLength's value.
    */
-  public void setResults(HashSet<ProtonavPair> results) {
-    this.results = results;
+  public int getMaxPatternLength() {
+    return maxPatternLength;
   }
 
   @Override

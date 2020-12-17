@@ -1,5 +1,6 @@
 package com.broudy.entity;
 
+import com.broudy.control.PatternCounter;
 import java.util.HashMap;
 
 /**

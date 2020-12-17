@@ -1,5 +1,7 @@
-package com.broudy.entity;
+package com.broudy.control;
 
+import com.broudy.entity.ParsedSequence;
+import com.broudy.entity.SequenceToBeParsed;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -7,7 +9,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import javafx.concurrent.Task;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -83,20 +84,23 @@ public class SequenceParser extends Task<ParsedSequence> {
             sequence.substring(sequenceToBeParsed.getStartIndex() - 1,
                 sequenceToBeParsed.getEndIndex()),
             sequence.substring(sequenceToBeParsed.getEndIndex())
-                .concat(sequence.substring(0, lLength - halfTheSum)));
+                .concat(sequence.substring(0, lLength - halfTheSum)), sequenceToBeParsed.getMinPatternLength(),
+            sequenceToBeParsed.getMaxPatternLength());
       } else {
         parsedSequence = new ParsedSequence(header,
             sequence.substring(sequence.length() - (halfTheSum - lLength))
                 .concat(sequence.substring(0, sequenceToBeParsed.getStartIndex() - 1)), sequence
             .substring(sequenceToBeParsed.getStartIndex() - 1, sequenceToBeParsed.getEndIndex()),
             sequence.substring(sequenceToBeParsed.getEndIndex(),
-                sequence.length() - (halfTheSum - lLength)));
+                sequence.length() - (halfTheSum - lLength)), sequenceToBeParsed.getMinPatternLength(),
+            sequenceToBeParsed.getMaxPatternLength());
       }
     } else {
       parsedSequence = new ParsedSequence(header,
           sequence.substring(0, sequenceToBeParsed.getStartIndex() - 1), sequence
           .substring(sequenceToBeParsed.getStartIndex() - 1, sequenceToBeParsed.getEndIndex()),
-          sequence.substring(sequenceToBeParsed.getEndIndex() + 1));
+          sequence.substring(sequenceToBeParsed.getEndIndex() + 1), sequenceToBeParsed.getMinPatternLength(),
+          sequenceToBeParsed.getMaxPatternLength());
     }
     System.out.println("Target Site:\t" + parsedSequence.getTargetSite());
     System.out.println("Before: "+parsedSequence.getLeftSequence().getSequence().length()

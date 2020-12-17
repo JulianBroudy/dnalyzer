@@ -1,4 +1,4 @@
-package com.broudy.entity;
+package com.broudy.control;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

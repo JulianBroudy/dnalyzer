@@ -52,6 +52,15 @@ public class TargetSitesSelectionController {
   private CheckBox noCB;
 
   @FXML
+  private TextField minPatternLenTF;
+
+  @FXML
+  private TextField maxPatternLenTF;
+
+  @FXML
+  private Button lenSetBTN;
+
+  @FXML
   private ListView<SequenceToBeParsed> matchedLV;
 
   @FXML
@@ -98,13 +107,13 @@ public class TargetSitesSelectionController {
 
   private void initializeEventHandlers() {
 
-    yesCB.setOnAction(action ->{
-      if(yesCB.isSelected()){
+    yesCB.setOnAction(action -> {
+      if (yesCB.isSelected()) {
         noCB.setSelected(false);
       }
     });
-    noCB.setOnAction(action ->{
-      if(noCB.isSelected()){
+    noCB.setOnAction(action -> {
+      if (noCB.isSelected()) {
         yesCB.setSelected(false);
       }
     });
@@ -122,8 +131,10 @@ public class TargetSitesSelectionController {
 
       }*/
 
-      final SequenceToBeParsed matchedSequence = new SequenceToBeParsed(unmatchedCB.getValue(), startIndexTF.getText(),
-          endIndexTF.getText(), yesCB.isSelected());
+      final SequenceToBeParsed matchedSequence = new SequenceToBeParsed(unmatchedCB.getValue(),
+          startIndexTF.getText(), endIndexTF.getText(), yesCB.isSelected(),
+          minPatternLenTF.getText().isEmpty() ? 3 : Integer.parseInt(minPatternLenTF.getText()),
+          maxPatternLenTF.getText().isEmpty() ? 7 : Integer.parseInt(maxPatternLenTF.getText()));
       filesManager.getMatchedSequences().add(matchedSequence);
 
     });

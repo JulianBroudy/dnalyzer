@@ -29,7 +29,7 @@
                   <VBox alignment="CENTER_LEFT" spacing="5.0" HBox.hgrow="ALWAYS">
                      <children>
                         <Label text="DNA sequences to be matched:" />
-                        <ComboBox fx:id="unmatchedCB" maxWidth="1.7976931348623157E308" promptText="Select 1st sequenceToBeParsed to match" VBox.vgrow="NEVER">
+                        <ComboBox fx:id="unmatchedCB" maxWidth="1.7976931348623157E308" promptText="Select the sequence to match" VBox.vgrow="NEVER">
                            <VBox.margin>
                               <Insets />
                            </VBox.margin>
@@ -41,7 +41,7 @@
                         </Separator>
                         <HBox prefHeight="100.0" prefWidth="200.0" VBox.vgrow="NEVER">
                            <children>
-                              <Label text="Is the sequenceToBeParsed cyclic?" />
+                              <Label text="Is the sequence cyclic?" />
                               <CheckBox fx:id="yesCB" mnemonicParsing="false" text="Yes">
                                  <HBox.margin>
                                     <Insets left="30.0" />
@@ -72,7 +72,7 @@
                               <HBox alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS">
                                  <children>
                                     <Label minWidth="49.0" styleClass="text-16" text="Start: " HBox.hgrow="NEVER" />
-                                    <TextField fx:id="startIndexTF" maxWidth="150.0" prefColumnCount="5" HBox.hgrow="ALWAYS">
+                                    <TextField fx:id="startIndexTF" alignment="CENTER" maxWidth="150.0" prefColumnCount="5" HBox.hgrow="ALWAYS">
                                        <HBox.margin>
                                           <Insets />
                                        </HBox.margin>
@@ -82,7 +82,7 @@
                               <HBox alignment="CENTER_LEFT" layoutX="10.0" layoutY="10.0" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS">
                                  <children>
                                     <Label minWidth="43.0" styleClass="text-16" text="End: " HBox.hgrow="NEVER" />
-                                    <TextField fx:id="endIndexTF" maxWidth="150.0" prefColumnCount="5" HBox.hgrow="ALWAYS" />
+                                    <TextField fx:id="endIndexTF" alignment="CENTER" maxWidth="150.0" prefColumnCount="5" HBox.hgrow="ALWAYS" />
                                  </children>
                               </HBox>
                               <Button fx:id="setBTN" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" mnemonicParsing="false" prefWidth="50.0" text="Set" HBox.hgrow="ALWAYS" />
@@ -95,7 +95,33 @@
                            </children>
                         </HBox>
                         <Region layoutX="10.0" layoutY="166.0" prefHeight="200.0" prefWidth="200.0" />
-                        <Button fx:id="uploadTargetSiteBTN" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Upload target-site sequenceToBeParsed" />
+                        <Button fx:id="uploadTargetSiteBTN" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Upload target-site sequence" />
+                        <Separator layoutX="10.0" layoutY="134.0" prefWidth="200.0">
+                           <VBox.margin>
+                              <Insets bottom="5.0" top="5.0" />
+                           </VBox.margin>
+                        </Separator>
+                        <HBox layoutX="10.0" layoutY="177.0" maxWidth="1.7976931348623157E308">
+                           <children>
+                              <HBox alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS">
+                                 <children>
+                                    <Label minWidth="49.0" styleClass="text-16" text="Min Pattern Len:  " HBox.hgrow="NEVER" />
+                                    <TextField fx:id="minPatternLenTF" alignment="CENTER" maxWidth="50.0" prefColumnCount="5" promptText="3" HBox.hgrow="ALWAYS">
+                                       <HBox.margin>
+                                          <Insets />
+                                       </HBox.margin>
+                                    </TextField>
+                                 </children>
+                              </HBox>
+                              <HBox alignment="CENTER_LEFT" layoutX="10.0" layoutY="10.0" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS">
+                                 <children>
+                                    <Label minWidth="43.0" styleClass="text-16" text="Max Pattern Len:  " HBox.hgrow="NEVER" />
+                                    <TextField fx:id="maxPatternLenTF" alignment="CENTER" maxWidth="50.0" prefColumnCount="5" promptText="7" HBox.hgrow="ALWAYS" />
+                                 </children>
+                              </HBox>
+                              <Button fx:id="lenSetBTN" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" mnemonicParsing="false" prefWidth="50.0" text="Set" HBox.hgrow="ALWAYS" />
+                           </children>
+                        </HBox>
                      </children>
                      <HBox.margin>
                         <Insets />
