@@ -111,9 +111,9 @@ public class AnalysisProgressController {
     XSSFCell cell = row.createCell(0);
     cell.setCellValue("ID");
     cell = row.createCell(1);
-    cell.setCellValue("Type");
-    cell = row.createCell(2);
     cell.setCellValue("Generated From");
+    cell = row.createCell(2);
+    cell.setCellValue("Type");
     cell = row.createCell(3);
     cell.setCellValue("Pattern");
     cell = row.createCell(4);
@@ -136,7 +136,7 @@ public class AnalysisProgressController {
 
     rowCount = writeSequence(parsedSequence.getLeftSequence(), totalLeftNucleotides,
         totalRightNucleotides, rowCount, sheet, row, cell);
-    writeSequence(parsedSequence.getLeftSequence(), totalLeftNucleotides, totalRightNucleotides,
+    writeSequence(parsedSequence.getRightSequence(), totalLeftNucleotides, totalRightNucleotides,
         rowCount, sheet, row, cell);
 
     fileChooser.setInitialFileName(parsedSequence.getHeader().substring(1) + ".xlsx");

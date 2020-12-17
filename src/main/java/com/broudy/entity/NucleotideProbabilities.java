@@ -107,6 +107,11 @@ public class NucleotideProbabilities {
       for (String pair : probabilitiesOfPairs.keySet()) {
         probabilitiesOfPairs.put(pair, probabilitiesOfPairs.get(pair) / totalCount);
       }
+      double sum = 0;
+      for(double pair: probabilitiesOfPairs.values()){
+        sum+=pair==1?0:pair;
+      }
+      System.out.println("Sum of prob: "+sum);
       return probabilitiesOfPairs;
     }
 

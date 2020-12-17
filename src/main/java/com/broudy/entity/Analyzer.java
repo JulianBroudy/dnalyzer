@@ -37,7 +37,7 @@ public class Analyzer extends Task<ParsedSequence> {
     List<ProtonavPair> protonavPairs = generateProtonavPairs(simplePatterns,
         parsedSequence.getLeftSequence());
 
-    //  Count on left side
+    //  Count
     countOccurrences(protonavPairs);
     parsedSequence.getLeftSequence().getProtonavs().addAll(protonavPairs);
 
@@ -96,12 +96,12 @@ public class Analyzer extends Task<ParsedSequence> {
     final HashMap<String, Double> probabilitiesByPairs = sequence.getNucleotideProbabilities()
         .getProbabilitiesOfPairs();
 
-    long patternProbabilityBySingles;
-    long palimentaryProbabilityBySingles;
+    double patternProbabilityBySingles;
+    double palimentaryProbabilityBySingles;
 
     StringBuilder pairBuilder = new StringBuilder();
-    long patternProbabilityByPairs;
-    long palimentaryProbabilityByPairs;
+    double patternProbabilityByPairs;
+    double palimentaryProbabilityByPairs;
 
     char previousNucleotide;
     char palimentaryNucleotide;
