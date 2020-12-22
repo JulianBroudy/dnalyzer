@@ -33,30 +33,37 @@ public class Analyzer extends Task<ParsedSequence> {
   @Override
   protected ParsedSequence call() throws Exception {
 
+    updateMessage("Extracting possible patterns from left sequence...");
     //  Get patterns from left sequence
     HashSet<String> simplePatterns = extractSimplePatterns(
         parsedSequence.getLeftSequence().getSequence(), parsedSequence.getMinPatternLength(),
         parsedSequence.getMaxPatternLength());
 
+    updateMessage("Generating protonav pairs...");
     // Generate protonav pairs
     List<ProtonavPair> protonavPairs = generateProtonavPairs(simplePatterns,
         parsedSequence.getLeftSequence());
 
+    updateMessage("Counting generated protonavs in left & right sequences...");
     //  Count
     countOccurrences(protonavPairs);
     parsedSequence.getLeftSequence().getProtonavs().addAll(protonavPairs);
 
+    updateMessage("Extracting possible patterns from right sequence...");
     //  Get patterns from left sequence
     simplePatterns = extractSimplePatterns(parsedSequence.getRightSequence().getSequence(),
         parsedSequence.getMinPatternLength(), parsedSequence.getMaxPatternLength());
 
+    updateMessage("Generating protonav pairs...");
     // Generate protonav pairs
     protonavPairs = generateProtonavPairs(simplePatterns, parsedSequence.getRightSequence());
 
+    updateMessage("Counting generated protonavs in left & right sequences...");
     //  Count on left side
     countOccurrences(protonavPairs);
     parsedSequence.getRightSequence().getProtonavs().addAll(protonavPairs);
 
+    updateMessage("Done");
     return parsedSequence;
   }
 
@@ -102,6 +109,8 @@ public class Analyzer extends Task<ParsedSequence> {
     StringBuilder pairBuilder = new StringBuilder();
     double patternProbabilityByPairs;
     double palimentaryProbabilityByPairs;
+
+    double midRes;
 
     char previousNucleotide;
     char palimentaryNucleotide;

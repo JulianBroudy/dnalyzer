@@ -81,6 +81,11 @@ public class AnalysisProgressController {
             saveFile((ParsedSequence) done.getSource().getValue());
             stageManager.switchScene(FXMLView.MAIN_SCREEN);
           });
+
+          analyzer.messageProperty().addListener((observable, oldValue, newValue) -> {
+            logTA.appendText(newValue.concat("\n"));
+          });
+
           try {
             Thread thread = new Thread(analyzer);
             thread.setDaemon(true);

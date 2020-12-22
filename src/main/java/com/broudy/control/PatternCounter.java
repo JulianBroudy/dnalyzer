@@ -13,11 +13,11 @@ import java.util.regex.Pattern;
 public class PatternCounter {
 
 
-  protected long prepareAndCountOccurrences(String pattern, String sequence) {
+  public long prepareAndCountOccurrences(String pattern, String sequence) {
     return countOccurrences(preparePatternForCount(pattern), sequence);
   }
 
-  protected long countOccurrences(String pattern, String sequence) {
+  public long countOccurrences(String pattern, String sequence) {
     final Pattern p = Pattern.compile(pattern);
     final Matcher m = p.matcher(sequence);
     long numberOfOccurrences = 0;
