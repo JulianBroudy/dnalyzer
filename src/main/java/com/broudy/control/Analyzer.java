@@ -106,14 +106,11 @@ public class Analyzer extends Task<ParsedSequence> {
     double patternProbabilityBySingles;
     double palimentaryProbabilityBySingles;
 
-    StringBuilder pairBuilder = new StringBuilder();
     double patternProbabilityByPairs;
     double palimentaryProbabilityByPairs;
 
-    double midRes;
-
-    char previousNucleotide;
     char palimentaryNucleotide;
+    String palimentaryPattern;
 
     final StringBuilder palimentaryBuilder = new StringBuilder();
     char[] patternCharArray;
@@ -121,10 +118,6 @@ public class Analyzer extends Task<ParsedSequence> {
 
       patternProbabilityBySingles = 1;
       palimentaryProbabilityBySingles = 1;
-      patternProbabilityByPairs = 1;
-      palimentaryProbabilityByPairs = 1;
-
-      previousNucleotide = '-';
 
       patternCharArray = pattern.toCharArray();
       for (char nucleotide : patternCharArray) {
@@ -133,16 +126,12 @@ public class Analyzer extends Task<ParsedSequence> {
 
         patternProbabilityBySingles *= probabilitiesOfSingles[nucleotide - 'A'];
         palimentaryProbabilityBySingles *= probabilitiesOfSingles[palimentaryNucleotide - 'A'];
-
-        patternProbabilityByPairs *= probabilitiesByPairs
-            .getOrDefault(pairBuilder.append(previousNucleotide).append(nucleotide).toString(),
-                (double) 1);
-        palimentaryProbabilityByPairs *= probabilitiesByPairs
-            .getOrDefault(pairBuilder.reverse().toString(), (double) 1);
-
-        previousNucleotide = nucleotide;
-        pairBuilder.delete(0, 2);
       }
+      patternProbabilityByPairs = calculateProbabilityByPairs(pattern, probabilitiesOfSingles,
+          probabilitiesByPairs);
+      palimentaryPattern = palimentaryBuilder.reverse().toString();
+      palimentaryProbabilityByPairs = calculateProbabilityByPairs(palimentaryPattern,
+          probabilitiesOfSingles, probabilitiesByPairs);
 
       final ProtonavPair newProtonavPair = new ProtonavPair(
           new Protonav(pattern, patternProbabilityBySingles, patternProbabilityByPairs),
@@ -153,6 +142,23 @@ public class Analyzer extends Task<ParsedSequence> {
     }
 
     return protonavPairs;
+  }
+
+  private double calculateProbabilityByPairs(String pattern, double[] probabilitiesOfSingles,
+      HashMap<String, Double> probabilitiesByPairs) {
+
+    double probability = probabilitiesByPairs.getOrDefault(pattern.substring(0, 2), (double) 1);
+
+    final char[] patternCharArray = pattern.toCharArray();
+    final int len = patternCharArray.length - 1;
+    char firstChar;
+    for (int index = 1; index < len; index++) {
+      firstChar = patternCharArray[index];
+      probability *=
+          (probabilitiesByPairs.getOrDefault(pattern.substring(index, index + 2), (double) 1)
+              + probabilitiesOfSingles[firstChar - 'A']) / probabilitiesOfSingles[firstChar - 'A'];
+    }
+    return probability;
   }
 
   private char getPalindromicComplementaryNucleotide(char nucleotide) {
