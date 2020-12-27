@@ -10,13 +10,14 @@ import java.util.HashMap;
  *
  * @author <a href="https://github.com/JulianBroudy"><b>Julian Broudy</b></a>
  */
-public class NucleotideProbabilities {
+public class ProbabilitiesPerSequence {
 
   private long totalNumberOfNucleotides;
+  private long totalNumberOfPairs;
   private double[] probabilitiesOfSingles;
   private HashMap<String, Double> probabilitiesOfPairs;
 
-  public NucleotideProbabilities(String inThisSequence) {
+  public ProbabilitiesPerSequence(String inThisSequence) {
     probabilitiesOfSingles = new double[26];
     totalNumberOfNucleotides = ProbabilitiesCalculator
         .calculateProbabilitiesOfSingles(inThisSequence, probabilitiesOfSingles);
@@ -108,11 +109,6 @@ public class NucleotideProbabilities {
       for (String pair : probabilitiesOfPairs.keySet()) {
         probabilitiesOfPairs.put(pair, probabilitiesOfPairs.get(pair) / totalCount);
       }
-      double sum = 0;
-      for(double pair: probabilitiesOfPairs.values()){
-        sum+=pair==1?0:pair;
-      }
-      System.out.println("Sum of prob: "+sum);
       return probabilitiesOfPairs;
     }
 

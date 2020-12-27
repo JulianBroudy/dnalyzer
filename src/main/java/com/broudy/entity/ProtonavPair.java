@@ -28,6 +28,11 @@ public class ProtonavPair {
     this.palimentary = palimentary;
     this.ID = PAIRS_COUNT++;
   }
+  public ProtonavPair(long ID, Protonav protonav, Protonav palimentary) {
+    this.protonav = protonav;
+    this.palimentary = palimentary;
+    this.ID = ID;
+  }
 
   /**
    * Gets the ID.

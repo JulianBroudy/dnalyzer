@@ -1,14 +1,15 @@
 package com.broudy.boundary.view_controllers;
 
 import com.broudy.boundary.FXMLView;
-import com.broudy.control.FilesManager;
-import com.broudy.control.StageManager;
 import com.broudy.control.Analyzer;
+import com.broudy.control.FilesManager;
+import com.broudy.control.SequenceParser;
+import com.broudy.control.StageManager;
 import com.broudy.entity.ParsedSequence;
 import com.broudy.entity.Protonav;
 import com.broudy.entity.ProtonavPair;
+import com.broudy.entity.Results;
 import com.broudy.entity.Sequence;
-import com.broudy.control.SequenceParser;
 import com.broudy.entity.SequenceToBeParsed;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -24,6 +25,7 @@ import javafx.scene.control.TextArea;
 import javafx.stage.FileChooser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -113,7 +115,27 @@ public class AnalysisProgressController {
 
     int rowCount = 0;
     XSSFRow row = sheet.createRow(rowCount++);
+
     XSSFCell cell = row.createCell(0);
+    cell.setCellValue("Header:");
+
+    cell = row.createCell(1);
+    cell.setCellValue(parsedSequence.getHeader());
+    sheet.addMergedRegion(new CellRangeAddress(0, 0, 1, 9));
+
+    row = sheet.createRow(rowCount++);
+    cell = row.createCell(0);
+    cell.setCellValue("Target Site:");
+
+    cell = row.createCell(1);
+    cell.setCellValue(parsedSequence.getTargetSite());
+    sheet.addMergedRegion(new CellRangeAddress(1, 1, 1, 9));
+
+    // Insert empty row
+    rowCount++;
+    row = sheet.createRow(rowCount++);
+
+    cell = row.createCell(0);
     cell.setCellValue("ID");
     cell = row.createCell(1);
     cell.setCellValue("Generated From");
@@ -134,15 +156,8 @@ public class AnalysisProgressController {
     cell = row.createCell(9);
     cell.setCellValue("Right Probability By Pairs");
 
-    final long totalLeftNucleotides = parsedSequence.getLeftSequence().getNucleotideProbabilities()
-        .getTotalNumberOfNucleotides();
-    final long totalRightNucleotides = parsedSequence.getRightSequence()
-        .getNucleotideProbabilities().getTotalNumberOfNucleotides();
-
-    rowCount = writeSequence(parsedSequence.getLeftSequence(), totalLeftNucleotides,
-        totalRightNucleotides, rowCount, sheet, row, cell);
-    writeSequence(parsedSequence.getRightSequence(), totalLeftNucleotides, totalRightNucleotides,
-        rowCount, sheet, row, cell);
+    rowCount = writeSequence(parsedSequence.getLeftSequence(), rowCount, sheet);
+    writeSequence(parsedSequence.getRightSequence(), rowCount, sheet);
 
     fileChooser.setInitialFileName(parsedSequence.getHeader().substring(1) + ".xlsx");
     File outputFile = fileChooser.showSaveDialog(stageManager.getPrimaryStage());
@@ -154,11 +169,13 @@ public class AnalysisProgressController {
 
   }
 
-  private int writeSequence(Sequence sequence, long totalLeft, long totalRight, int rowCount,
-      XSSFSheet sheet, XSSFRow row, XSSFCell cell) {
+  private int writeSequence(Sequence sequence, int rowCount, XSSFSheet sheet) {
 
     final String currentSide = sequence.getSide().toString();
     final List<ProtonavPair> protonavPairs = sequence.getProtonavs();
+
+    XSSFRow row;
+    XSSFCell cell;
 
     for (ProtonavPair pair : protonavPairs) {
       row = sheet.createRow(rowCount++);
@@ -168,7 +185,7 @@ public class AnalysisProgressController {
       cell.setCellValue(currentSide);
       cell = row.createCell(2);
       cell.setCellValue("Protonav");
-      writeRow(pair.getProtonav(), totalLeft, totalRight, row);
+      writeRow(pair.getProtonav(), row);
 
       row = sheet.createRow(rowCount++);
       cell = row.createCell(0);
@@ -177,39 +194,35 @@ public class AnalysisProgressController {
       cell.setCellValue(currentSide);
       cell = row.createCell(2);
       cell.setCellValue("Palimentary");
-      writeRow(pair.getPalimentary(), totalLeft, totalRight, row);
+      writeRow(pair.getPalimentary(), row);
     }
 
     return rowCount;
   }
 
-  private void writeRow(Protonav protonav, long totalLeft, long totalRight, XSSFRow row) {
+  private void writeRow(Protonav protonav, XSSFRow row) {
     XSSFCell cell = row.createCell(3);
     cell.setCellValue(protonav.getPattern());
 
+    final Results results = protonav.getResults();
+
     cell = row.createCell(4);
-    cell.setCellValue(protonav.getOccurrences().getLeftCount());
+    cell.setCellValue(results.getLeftCount());
 
     cell = row.createCell(5);
-    cell.setCellValue(protonav.getOccurrences().getRightCount());
+    cell.setCellValue(results.getRightCount());
 
     cell = row.createCell(6);
-    cell.setCellValue(((double) protonav.getOccurrences().getLeftCount() / totalLeft) / protonav
-        .getProbabilityBySingles());
+    cell.setCellValue(results.getLeftProbabilityBySingles());
 
     cell = row.createCell(7);
-    cell.setCellValue(((double) protonav.getOccurrences().getRightCount() / totalRight) / protonav
-        .getProbabilityBySingles());
+    cell.setCellValue(results.getRightProbabilityBySingles());
 
     cell = row.createCell(8);
-    cell.setCellValue(
-        ((double) protonav.getOccurrences().getLeftCount() / (totalLeft - 1)) / protonav
-            .getProbabilityByPairs());
+    cell.setCellValue(results.getLeftProbabilityByPairs());
 
     cell = row.createCell(9);
-    cell.setCellValue(
-        ((double) protonav.getOccurrences().getRightCount() / (totalRight - 1)) / protonav
-            .getProbabilityByPairs());
+    cell.setCellValue(results.getRightProbabilityByPairs());
 
   }
 

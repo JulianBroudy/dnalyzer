@@ -15,13 +15,13 @@ public class Sequence {
   private final SequenceSide side;
   private final String sequence;
   private final List<ProtonavPair> protonavs;
-  private final NucleotideProbabilities nucleotideProbabilities;
+  private final ProbabilitiesPerSequence nucleotideProbabilities;
 
   public Sequence(SequenceSide side, String sequence) {
     this.side = side;
     this.sequence = sequence;
     this.protonavs = new ArrayList<>();
-    this.nucleotideProbabilities = new NucleotideProbabilities(sequence);
+    this.nucleotideProbabilities = new ProbabilitiesPerSequence(sequence);
   }
 
   /**
@@ -56,7 +56,7 @@ public class Sequence {
    *
    * @return nucleotideProbabilities's value.
    */
-  public NucleotideProbabilities getNucleotideProbabilities() {
+  public ProbabilitiesPerSequence getNucleotideProbabilities() {
     return nucleotideProbabilities;
   }
 

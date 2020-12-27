@@ -11,15 +11,15 @@ package com.broudy.entity;
 public class Protonav {
 
   private final String pattern;
-  private final double probabilityBySingles;
-  private final double probabilityByPairs;
   private final Occurrences occurrences;
+  private final ProtonavProbabilities probabilities;
+  private Results results;
 
-  public Protonav(String pattern, double probabilityBySingles, double probabilityByPairs) {
+  public Protonav(String pattern, ProtonavProbabilities probabilities) {
     this.pattern = pattern;
-    this.probabilityBySingles = probabilityBySingles;
-    this.probabilityByPairs = probabilityByPairs;
+    this.probabilities = probabilities;
     this.occurrences = new Occurrences();
+    this.results = new Results();
   }
 
   /**
@@ -32,29 +32,38 @@ public class Protonav {
   }
 
   /**
-   * Gets the probability.
-   *
-   * @return probability's value.
-   */
-  public double getProbabilityBySingles() {
-    return probabilityBySingles;
-  }
-
-  /**
-   * Gets the pairsProbability.
-   *
-   * @return pairsProbability's value.
-   */
-  public double getProbabilityByPairs() {
-    return probabilityByPairs;
-  }
-
-  /**
    * Gets the occurrences.
    *
    * @return occurrences's value.
    */
   public Occurrences getOccurrences() {
     return occurrences;
+  }
+
+  /**
+   * Gets the probabilities.
+   *
+   * @return probabilities's value.
+   */
+  public ProtonavProbabilities getProbabilities() {
+    return probabilities;
+  }
+
+  /**
+   * Gets the results.
+   *
+   * @return results's value.
+   */
+  public Results getResults() {
+    return results;
+  }
+
+  /**
+   * Sets the results.
+   *
+   * @param results is the results's new value.
+   */
+  public void setResults(Results results) {
+    this.results = results;
   }
 }

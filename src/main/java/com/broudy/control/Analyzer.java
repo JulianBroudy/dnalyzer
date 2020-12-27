@@ -1,12 +1,16 @@
 package com.broudy.control;
 
+import com.broudy.control.ResultsFilter.MoreOnLeftFilter;
+import com.broudy.control.ResultsFilter.MoreOnRightFilter;
 import com.broudy.entity.ParsedSequence;
 import com.broudy.entity.Protonav;
 import com.broudy.entity.ProtonavPair;
-import com.broudy.entity.Sequence;
+import com.broudy.entity.ProtonavProbabilities;
+import com.broudy.entity.Results;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -23,30 +27,57 @@ import javafx.concurrent.Task;
 public class Analyzer extends Task<ParsedSequence> {
 
   private final ParsedSequence parsedSequence;
-  private double[] nucleotidesProbabilities;
-  private HashMap<String, Double> pairingsProbabilities;
+  private double[] probabilitiesOfSinglesOnLeft;
+  private double[] probabilitiesOfSinglesOnRight;
+  private HashMap<String, Double> probabilitiesByPairsOnLeft;
+  private HashMap<String, Double> probabilitiesByPairsOnRight;
+  private double totalNumberOfNucleotidesOnLeft;
+  private double totalNumberOfNucleotidesOnRight;
+  private double totalNumberOfPairsOnLeft;
+  private double totalNumberOfPairsOnRight;
+  private long PAIRS_COUNT;
 
   public Analyzer(ParsedSequence parsedSequence) {
     this.parsedSequence = parsedSequence;
+    this.PAIRS_COUNT = 0;
   }
 
   @Override
   protected ParsedSequence call() throws Exception {
 
+    updateMessage("Setting up...");
+    probabilitiesOfSinglesOnLeft = parsedSequence.getLeftSequence().getNucleotideProbabilities()
+        .getProbabilitiesOfSingles();
+    probabilitiesOfSinglesOnRight = parsedSequence.getRightSequence().getNucleotideProbabilities()
+        .getProbabilitiesOfSingles();
+    probabilitiesByPairsOnLeft = parsedSequence.getLeftSequence().getNucleotideProbabilities()
+        .getProbabilitiesOfPairs();
+    probabilitiesByPairsOnRight = parsedSequence.getRightSequence().getNucleotideProbabilities()
+        .getProbabilitiesOfPairs();
+    totalNumberOfNucleotidesOnLeft = parsedSequence.getLeftSequence().getNucleotideProbabilities()
+        .getTotalNumberOfNucleotides();
+    totalNumberOfNucleotidesOnRight = parsedSequence.getRightSequence().getNucleotideProbabilities()
+        .getTotalNumberOfNucleotides();
+    totalNumberOfPairsOnLeft = totalNumberOfNucleotidesOnLeft - 1;
+    totalNumberOfPairsOnRight = totalNumberOfNucleotidesOnRight - 1;
+
     updateMessage("Extracting possible patterns from left sequence...");
     //  Get patterns from left sequence
-    HashSet<String> simplePatterns = extractSimplePatterns(
+    List<String> simplePatterns = extractSimplePatterns(
         parsedSequence.getLeftSequence().getSequence(), parsedSequence.getMinPatternLength(),
         parsedSequence.getMaxPatternLength());
 
     updateMessage("Generating protonav pairs...");
     // Generate protonav pairs
-    List<ProtonavPair> protonavPairs = generateProtonavPairs(simplePatterns,
-        parsedSequence.getLeftSequence());
+    List<ProtonavPair> protonavPairs = generateProtonavPairs(simplePatterns);
 
     updateMessage("Counting generated protonavs in left & right sequences...");
+    ResultsFilter moreOnLeftFilter = new MoreOnLeftFilter();
+    ResultsFilter moreOnRightFilter = new MoreOnRightFilter();
     //  Count
-    countOccurrences(protonavPairs);
+    protonavPairs = countOccurrencesAndFilterProtonavs(protonavPairs, moreOnLeftFilter,
+        moreOnRightFilter);
+
     parsedSequence.getLeftSequence().getProtonavs().addAll(protonavPairs);
 
     updateMessage("Extracting possible patterns from right sequence...");
@@ -56,18 +87,20 @@ public class Analyzer extends Task<ParsedSequence> {
 
     updateMessage("Generating protonav pairs...");
     // Generate protonav pairs
-    protonavPairs = generateProtonavPairs(simplePatterns, parsedSequence.getRightSequence());
+    protonavPairs = generateProtonavPairs(simplePatterns);
 
     updateMessage("Counting generated protonavs in left & right sequences...");
     //  Count on left side
-    countOccurrences(protonavPairs);
+    protonavPairs = countOccurrencesAndFilterProtonavs(protonavPairs, moreOnRightFilter,
+        moreOnLeftFilter);
     parsedSequence.getRightSequence().getProtonavs().addAll(protonavPairs);
 
     updateMessage("Done");
     return parsedSequence;
   }
 
-  private void countOccurrences(List<ProtonavPair> protonavPairs) {
+  private List<ProtonavPair> countOccurrencesAndFilterProtonavs(List<ProtonavPair> protonavPairs,
+      ResultsFilter protonavFilter, ResultsFilter palimentaryFilter) {
 
     long progress = 0;
     long totalProgress = protonavPairs.size() * 4;
@@ -76,38 +109,87 @@ public class Analyzer extends Task<ParsedSequence> {
     final String rightSequence = parsedSequence.getRightSequence().getSequence();
     PatternCounter patternCounter = new PatternCounter();
 
+    List<ProtonavPair> filteredPairs = new ArrayList<>();
+
+    long leftCount, rightCount;
+    double probabilityOnLeft, probabilityOnRight;
+
+    Protonav protonav, palimentary;
+    ProtonavProbabilities protonavProbabilities, palimentaryProbabilities;
+
     for (ProtonavPair protonavPair : protonavPairs) {
-      protonavPair.getProtonav().getOccurrences().increaseLeftCount(
-          patternCounter.countOccurrences(protonavPair.getProtonav().getPattern(), leftSequence));
-      updateProgress(progress++, totalProgress);
-      protonavPair.getProtonav().getOccurrences().increaseRightCount(
-          patternCounter.countOccurrences(protonavPair.getProtonav().getPattern(), rightSequence));
+
+      protonav = protonavPair.getProtonav();
+      palimentary = protonavPair.getPalimentary();
+      protonavProbabilities = protonav.getProbabilities();
+      palimentaryProbabilities = palimentary.getProbabilities();
+
+      leftCount = patternCounter.countOccurrences(protonav.getPattern(), leftSequence);
+      probabilityOnLeft = (leftCount / totalNumberOfNucleotidesOnLeft) / protonavProbabilities
+          .getLeftProbabilityBySingles();
       updateProgress(progress++, totalProgress);
 
-      protonavPair.getPalimentary().getOccurrences().increaseLeftCount(patternCounter
-          .countOccurrences(protonavPair.getPalimentary().getPattern(), leftSequence));
+      rightCount = patternCounter.countOccurrences(protonav.getPattern(), rightSequence);
+      probabilityOnRight = (rightCount / totalNumberOfNucleotidesOnRight) / protonavProbabilities
+          .getRightProbabilityBySingles();
       updateProgress(progress++, totalProgress);
-      protonavPair.getPalimentary().getOccurrences().increaseRightCount(patternCounter
-          .countOccurrences(protonavPair.getPalimentary().getPattern(), rightSequence));
-      updateProgress(progress++, totalProgress);
+
+      if (protonavFilter.isGood(probabilityOnLeft, probabilityOnRight)) {
+        final Results protonavResults = new Results();
+        protonavResults.setLeftCount(leftCount);
+        protonavResults.setRightCount(rightCount);
+        protonavResults.setLeftProbabilityBySingles(probabilityOnLeft);
+        protonavResults.setRightProbabilityBySingles(probabilityOnRight);
+        protonavResults.setLeftProbabilityByPairs(
+            (leftCount / totalNumberOfPairsOnLeft) / protonavProbabilities
+                .getLeftProbabilityByPairs());
+        protonavResults.setRightProbabilityByPairs(
+            (leftCount / totalNumberOfPairsOnRight) / protonavProbabilities
+                .getRightProbabilityByPairs());
+        protonav.setResults(protonavResults);
+
+        leftCount = patternCounter.countOccurrences(palimentary.getPattern(), leftSequence);
+        probabilityOnLeft = (leftCount / totalNumberOfNucleotidesOnLeft) / palimentaryProbabilities
+            .getLeftProbabilityBySingles();
+        updateProgress(progress++, totalProgress);
+
+        rightCount = patternCounter.countOccurrences(palimentary.getPattern(), rightSequence);
+        probabilityOnRight =
+            (rightCount / totalNumberOfNucleotidesOnRight) / palimentaryProbabilities
+                .getRightProbabilityBySingles();
+        updateProgress(progress++, totalProgress);
+
+        if (palimentaryFilter.isGood(probabilityOnLeft, probabilityOnRight)) {
+          final Results palimentaryResults = new Results();
+          palimentaryResults.setLeftCount(leftCount);
+          palimentaryResults.setRightCount(rightCount);
+          palimentaryResults.setLeftProbabilityBySingles(probabilityOnLeft);
+          palimentaryResults.setRightProbabilityBySingles(probabilityOnRight);
+          palimentaryResults.setLeftProbabilityByPairs(
+              (leftCount / totalNumberOfPairsOnLeft) / palimentaryProbabilities
+                  .getLeftProbabilityByPairs());
+          palimentaryResults.setRightProbabilityByPairs(
+              (leftCount / totalNumberOfPairsOnRight) / palimentaryProbabilities
+                  .getRightProbabilityByPairs());
+          palimentary.setResults(palimentaryResults);
+          filteredPairs.add(protonavPair);
+        }
+      } else {
+        updateProgress(progress++, totalProgress);
+        updateProgress(progress++, totalProgress);
+      }
     }
 
+    return filteredPairs;
   }
 
-  private List<ProtonavPair> generateProtonavPairs(HashSet<String> simplePatterns,
-      Sequence sequence) {
+  private List<ProtonavPair> generateProtonavPairs(List<String> simplePatterns) {
     final List<ProtonavPair> protonavPairs = new ArrayList<>();
 
-    final double[] probabilitiesOfSingles = sequence.getNucleotideProbabilities()
-        .getProbabilitiesOfSingles();
-    final HashMap<String, Double> probabilitiesByPairs = sequence.getNucleotideProbabilities()
-        .getProbabilitiesOfPairs();
-
-    double patternProbabilityBySingles;
-    double palimentaryProbabilityBySingles;
-
-    double patternProbabilityByPairs;
-    double palimentaryProbabilityByPairs;
+    double patternLeftProbabilityBySingles;
+    double patternRightProbabilityBySingles;
+    double palimentaryLeftProbabilityBySingles;
+    double palimentaryRightProbabilityBySingles;
 
     char palimentaryNucleotide;
     String palimentaryPattern;
@@ -116,27 +198,36 @@ public class Analyzer extends Task<ParsedSequence> {
     char[] patternCharArray;
     for (String pattern : simplePatterns) {
 
-      patternProbabilityBySingles = 1;
-      palimentaryProbabilityBySingles = 1;
+      patternLeftProbabilityBySingles = 1;
+      patternRightProbabilityBySingles = 1;
+      palimentaryLeftProbabilityBySingles = 1;
+      palimentaryRightProbabilityBySingles = 1;
 
       patternCharArray = pattern.toCharArray();
       for (char nucleotide : patternCharArray) {
         palimentaryNucleotide = getPalindromicComplementaryNucleotide(nucleotide);
         palimentaryBuilder.append(palimentaryNucleotide);
 
-        patternProbabilityBySingles *= probabilitiesOfSingles[nucleotide - 'A'];
-        palimentaryProbabilityBySingles *= probabilitiesOfSingles[palimentaryNucleotide - 'A'];
+        patternLeftProbabilityBySingles *= probabilitiesOfSinglesOnLeft[nucleotide - 'A'];
+        patternRightProbabilityBySingles *= probabilitiesOfSinglesOnRight[nucleotide - 'A'];
+        palimentaryLeftProbabilityBySingles *= probabilitiesOfSinglesOnLeft[palimentaryNucleotide
+            - 'A'];
+        palimentaryRightProbabilityBySingles *= probabilitiesOfSinglesOnRight[palimentaryNucleotide
+            - 'A'];
       }
-      patternProbabilityByPairs = calculateProbabilityByPairs(pattern, probabilitiesOfSingles,
-          probabilitiesByPairs);
-      palimentaryPattern = palimentaryBuilder.reverse().toString();
-      palimentaryProbabilityByPairs = calculateProbabilityByPairs(palimentaryPattern,
-          probabilitiesOfSingles, probabilitiesByPairs);
 
-      final ProtonavPair newProtonavPair = new ProtonavPair(
-          new Protonav(pattern, patternProbabilityBySingles, patternProbabilityByPairs),
-          new Protonav(palimentaryBuilder.reverse().toString(), palimentaryProbabilityBySingles,
-              palimentaryProbabilityByPairs));
+      final ProtonavProbabilities protonavProbabilities = new ProtonavProbabilities(
+          patternLeftProbabilityBySingles, patternRightProbabilityBySingles);
+      setProbabilitiesByPairs(pattern, protonavProbabilities);
+
+      palimentaryPattern = palimentaryBuilder.reverse().toString();
+      final ProtonavProbabilities palimentaryProbabilities = new ProtonavProbabilities(
+          palimentaryLeftProbabilityBySingles, palimentaryRightProbabilityBySingles);
+      setProbabilitiesByPairs(palimentaryPattern, palimentaryProbabilities);
+
+      final ProtonavPair newProtonavPair = new ProtonavPair(PAIRS_COUNT++,
+          new Protonav(pattern, protonavProbabilities),
+          new Protonav(palimentaryPattern, palimentaryProbabilities));
       protonavPairs.add(newProtonavPair);
       palimentaryBuilder.delete(0, palimentaryBuilder.length());
     }
@@ -144,21 +235,35 @@ public class Analyzer extends Task<ParsedSequence> {
     return protonavPairs;
   }
 
-  private double calculateProbabilityByPairs(String pattern, double[] probabilitiesOfSingles,
-      HashMap<String, Double> probabilitiesByPairs) {
+  private void setProbabilitiesByPairs(String pattern, ProtonavProbabilities probabilities) {
 
-    double probability = probabilitiesByPairs.getOrDefault(pattern.substring(0, 2), (double) 1);
+    double probabilityOnLeft = probabilitiesByPairsOnLeft
+        .getOrDefault(pattern.substring(0, 2), (double) 1);
+    double probabilityOnRight = probabilitiesByPairsOnRight
+        .getOrDefault(pattern.substring(0, 2), (double) 1);
 
+    double probabilityOfSingleOnLeft, probabilityOfSingleOnRight;
     final char[] patternCharArray = pattern.toCharArray();
     final int len = patternCharArray.length - 1;
-    char firstChar;
+
+    int probabilityIndex;
+    String pair;
+
     for (int index = 1; index < len; index++) {
-      firstChar = patternCharArray[index];
-      probability *=
-          (probabilitiesByPairs.getOrDefault(pattern.substring(index, index + 2), (double) 1)
-              + probabilitiesOfSingles[firstChar - 'A']) / probabilitiesOfSingles[firstChar - 'A'];
+      pair = pattern.substring(index, index + 2);
+      probabilityIndex = patternCharArray[index] - 'A';
+      probabilityOfSingleOnLeft = probabilitiesOfSinglesOnLeft[probabilityIndex];
+      probabilityOnLeft *=
+          (probabilitiesByPairsOnLeft.getOrDefault(pair, (double) 1) + probabilityOfSingleOnLeft)
+              / probabilityOfSingleOnLeft;
+      probabilityOfSingleOnRight = probabilitiesOfSinglesOnRight[probabilityIndex];
+      probabilityOnRight *=
+          (probabilitiesByPairsOnRight.getOrDefault(pair, (double) 1) + probabilityOfSingleOnRight)
+              / probabilityOfSingleOnRight;
     }
-    return probability;
+
+    probabilities.setLeftProbabilityByPairs(probabilityOnLeft);
+    probabilities.setRightProbabilityByPairs(probabilityOnRight);
   }
 
   private char getPalindromicComplementaryNucleotide(char nucleotide) {
@@ -179,7 +284,7 @@ public class Analyzer extends Task<ParsedSequence> {
     return nucleotide;
   }
 
-  private HashSet<String> extractSimplePatterns(String sequence, int minLength, int maxLength) {
+  private List<String> extractSimplePatterns(String sequence, int minLength, int maxLength) {
 
     final HashSet<String> simplePatterns = new HashSet<>();
 
@@ -211,7 +316,10 @@ public class Analyzer extends Task<ParsedSequence> {
 
     }
 
-    return simplePatterns;
+    final List<String> sortedPatterns = new ArrayList<>(simplePatterns);
+    Collections.sort(sortedPatterns);
+
+    return sortedPatterns;
   }
 
   // private void countOccurrencesForRightOf(String sequence, HashSet<ProtonavPair> allPatterns) {
@@ -292,7 +400,8 @@ public class Analyzer extends Task<ParsedSequence> {
 
           final char[] protonavArray = protonav.toCharArray();
           for (char ch : protonavArray) {
-            protonavProbability *= (nucleotidesProbabilities[ch - 'A']);
+            // protonavProbability *= (nucleotidesProbabilities[ch - 'A']);
+            //TODO previous line needs to change to left and right probabilities
             final char nucleotide;
             switch (ch) {
               case 'A':
@@ -335,23 +444,23 @@ public class Analyzer extends Task<ParsedSequence> {
                 nucleotide = 'N';
             }
             palimentaryBuilder.append(nucleotide);
-            palimentaryProbability *= nucleotidesProbabilities[nucleotide - 'A'];
+            // palimentaryProbability *= nucleotidesProbabilities[nucleotide - 'A'];
 
-            protonavPairProbability *= pairingsProbabilities
-                .getOrDefault(pairBuilder.append(previousNucleotide).append(ch).toString(),
-                    (double) 1);
-            palimentaryPairProbability *= pairingsProbabilities
-                .getOrDefault(pairBuilder.reverse().toString(), (double) 1);
+            // protonavPairProbability *= pairingsProbabilities
+            //     .getOrDefault(pairBuilder.append(previousNucleotide).append(ch).toString(),
+            //         (double) 1);
+            // palimentaryPairProbability *= pairingsProbabilities
+            //     .getOrDefault(pairBuilder.reverse().toString(), (double) 1);
 
             previousNucleotide = ch;
 
             pairBuilder.delete(0, 2);
           }
-          final ProtonavPair newPair = new ProtonavPair(
-              new Protonav(protonav, protonavProbability, protonavPairProbability),
-              new Protonav(palimentaryBuilder.reverse().toString(), palimentaryProbability,
-                  palimentaryPairProbability));
-          protonavPairs.add(newPair);
+          // final ProtonavPair newPair = new ProtonavPair(
+          //     new Protonav(protonav, protonavProbability, protonavPairProbability),
+          //     new Protonav(palimentaryBuilder.reverse().toString(), palimentaryProbability,
+          //         palimentaryPairProbability));
+          // protonavPairs.add(newPair);
         }
       }
     }
