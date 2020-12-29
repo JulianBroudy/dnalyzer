@@ -16,6 +16,7 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXML;
@@ -68,44 +69,52 @@ public class AnalysisProgressController {
   @FXML
   void initialize() {
 
-    startBTN.disableProperty().bind(inProgress);
+    // startBTN.disableProperty().bind(inProgress);
+
+    startBTN.textProperty().bind(
+        Bindings.createStringBinding(() -> inProgress.getValue() ? "Cancel" : "Start", inProgress));
 
     startBTN.setOnAction(click -> {
-      // Parse files
-      final List<ParsedSequence> parsedSequences = new ArrayList<>();
-      for (SequenceToBeParsed sequenceToBeParsed : filesManager.getMatchedSequences()) {
-        final SequenceParser parser = new SequenceParser(sequenceToBeParsed);
-        parser.setOnSucceeded(succeeded -> {
-          parsedSequences.add((ParsedSequence) succeeded.getSource().getValue());
-          final Analyzer analyzer = new Analyzer((ParsedSequence) succeeded.getSource().getValue());
-          analyzer.setOnSucceeded(done -> {
-            inProgress.set(false);
-            saveFile((ParsedSequence) done.getSource().getValue());
-            stageManager.switchScene(FXMLView.MAIN_SCREEN);
-          });
+      if (inProgress.getValue()) {
+        System.out.println("Cancelling...");
+      } else {
+        // Parse files
+        final List<ParsedSequence> parsedSequences = new ArrayList<>();
+        for (SequenceToBeParsed sequenceToBeParsed : filesManager.getMatchedSequences()) {
+          final SequenceParser parser = new SequenceParser(sequenceToBeParsed);
+          parser.setOnSucceeded(succeeded -> {
+            parsedSequences.add((ParsedSequence) succeeded.getSource().getValue());
+            final Analyzer analyzer = new Analyzer(
+                (ParsedSequence) succeeded.getSource().getValue());
+            analyzer.setOnSucceeded(done -> {
+              inProgress.set(false);
+              saveFile((ParsedSequence) done.getSource().getValue());
+              stageManager.switchScene(FXMLView.MAIN_SCREEN);
+            });
 
-          analyzer.messageProperty().addListener((observable, oldValue, newValue) -> {
-            logTA.appendText(newValue.concat("\n"));
-          });
+            analyzer.messageProperty().addListener((observable, oldValue, newValue) -> {
+              logTA.appendText(newValue.concat("\n"));
+            });
 
-          try {
-            Thread thread = new Thread(analyzer);
-            thread.setDaemon(true);
-            progressBar.progressProperty().unbind();
-            progressBar.progressProperty().bind(analyzer.progressProperty());
-            thread.start();
-          } catch (Exception e) {
-            System.out.println(e.getStackTrace());
-          }
-        });
-        Thread thread = new Thread(parser);
-        thread.setDaemon(true);
-        progressBar.progressProperty().bind(parser.progressProperty());
-        inProgress.set(true);
-        thread.start();
+            try {
+              Thread thread = new Thread(analyzer);
+              thread.setDaemon(true);
+              progressBar.progressProperty().unbind();
+              progressBar.progressProperty().bind(analyzer.progressProperty());
+              thread.start();
+            } catch (Exception e) {
+              System.out.println(e.getStackTrace());
+            }
+          });
+          Thread thread = new Thread(parser);
+          thread.setDaemon(true);
+          progressBar.progressProperty().bind(parser.progressProperty());
+          inProgress.set(true);
+          thread.start();
+        }
+        // Analyze sequences
+        // Show results
       }
-      // Analyze sequences
-      // Show results
     });
   }
 
