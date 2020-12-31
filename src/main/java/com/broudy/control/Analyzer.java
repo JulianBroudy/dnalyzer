@@ -10,6 +10,7 @@ import com.broudy.entity.Results;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,6 +37,8 @@ public class Analyzer extends Task<ParsedSequence> {
   private double totalNumberOfPairsOnLeft;
   private double totalNumberOfPairsOnRight;
   private long PAIRS_COUNT;
+  private HashSet<String> generatedPatterns = new HashSet<>();
+
 
   public Analyzer(ParsedSequence parsedSequence) {
     this.parsedSequence = parsedSequence;
@@ -44,6 +47,51 @@ public class Analyzer extends Task<ParsedSequence> {
 
   @Override
   protected ParsedSequence call() throws Exception {
+
+    return analyzeOccurrenceProbabilities();
+
+    /*final int WINDOW = 500;
+    final int MIN_LEN = 2;
+    final int MAX_LEN = 3;
+
+    HashMap<String, int[]> patternsCorrelations = new HashMap<>();
+
+    HashSet<String> patterns = new HashSet<>();
+
+    final String sequence = parsedSequence.getLeftSequence().getSequence();
+
+    final int from = sequence.length()-10000-WINDOW;
+    final int to = sequence.length() - WINDOW;
+    final String sequenceUnderTest = sequence.substring(from);
+
+    final PatternCounter patternCounter = new PatternCounter();
+
+    for (int i = 0; i < 10000; i++) {
+
+      final String searchArea = sequenceUnderTest.substring(i, i + WINDOW);
+
+      for (int len = MIN_LEN; len <= MAX_LEN; len++) {
+
+        final String pattern = sequenceUnderTest.substring(i, i + len);
+        final int[] array;
+        if (patterns.contains(pattern)) {
+          array = patternsCorrelations.get(pattern);
+        } else {
+          array = new int[500];
+          patterns.add(pattern);
+          patternsCorrelations.put(pattern, array);
+        }
+        patternCounter.updateCorrelationArray(pattern, searchArea, array);
+      }
+    }
+
+    patternsCorrelations.forEach((key, value) -> System.out.println(key + ":\n" + Arrays.toString(value)+"\n"));
+
+    return parsedSequence;*/
+
+  }
+
+  private ParsedSequence analyzeOccurrenceProbabilities() {
 
     updateMessage("Setting up...");
     probabilitiesOfSinglesOnLeft = parsedSequence.getLeftSequence().getNucleotideProbabilities()
@@ -186,6 +234,10 @@ public class Analyzer extends Task<ParsedSequence> {
   private List<ProtonavPair> generateProtonavPairs(List<String> simplePatterns) {
     final List<ProtonavPair> protonavPairs = new ArrayList<>();
 
+    final List<String> newPatterns = new ArrayList<>(simplePatterns);
+    newPatterns.removeAll(generatedPatterns);
+
+
     double patternLeftProbabilityBySingles;
     double patternRightProbabilityBySingles;
     double palimentaryLeftProbabilityBySingles;
@@ -196,7 +248,7 @@ public class Analyzer extends Task<ParsedSequence> {
 
     final StringBuilder palimentaryBuilder = new StringBuilder();
     char[] patternCharArray;
-    for (String pattern : simplePatterns) {
+    for (String pattern : newPatterns) {
 
       patternLeftProbabilityBySingles = 1;
       patternRightProbabilityBySingles = 1;
@@ -229,6 +281,9 @@ public class Analyzer extends Task<ParsedSequence> {
           new Protonav(pattern, protonavProbabilities),
           new Protonav(palimentaryPattern, palimentaryProbabilities));
       protonavPairs.add(newProtonavPair);
+
+      generatedPatterns.add(pattern);
+      generatedPatterns.add(palimentaryPattern);
       palimentaryBuilder.delete(0, palimentaryBuilder.length());
     }
 

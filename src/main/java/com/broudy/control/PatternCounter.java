@@ -72,5 +72,20 @@ public class PatternCounter {
     return patternBuilder.toString();
   }
 
+  public long updateCorrelationArray(String pattern, String sequence, int[] array) {
+    final Pattern p = Pattern.compile(pattern);
+    final Matcher m = p.matcher(sequence);
+    long numberOfOccurrences = 0;
+    while (m.find()) {
+      final int groupCount = m.groupCount();
+      for (int i = 0; i <= groupCount; i++) {
+        if (!m.group(i).isEmpty()) {
+          array[m.start()]++;
+        }
+      }
+    }
+    return numberOfOccurrences;
+  }
+
 
 }
