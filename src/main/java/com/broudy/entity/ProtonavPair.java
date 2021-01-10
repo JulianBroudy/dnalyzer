@@ -23,6 +23,15 @@ public class ProtonavPair {
     this.ID = PAIRS_COUNT++;
   }
 
+  /**
+   * Sets the PAIRS_COUNT.
+   *
+   * @param PAIRS_COUNT is the PAIRS_COUNT's new value.
+   */
+  public static void setPairsCount(long pairsCount) {
+    PAIRS_COUNT = pairsCount;
+  }
+
   public ProtonavPair(Protonav protonav, Protonav palimentary) {
     this.protonav = protonav;
     this.palimentary = palimentary;

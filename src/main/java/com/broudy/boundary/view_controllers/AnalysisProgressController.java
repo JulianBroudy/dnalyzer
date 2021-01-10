@@ -5,6 +5,7 @@ import com.broudy.control.Analyzer;
 import com.broudy.control.FilesManager;
 import com.broudy.control.SequenceParser;
 import com.broudy.control.StageManager;
+import com.broudy.entity.CorrelationArrays;
 import com.broudy.entity.ParsedSequence;
 import com.broudy.entity.Protonav;
 import com.broudy.entity.ProtonavPair;
@@ -15,6 +16,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
@@ -26,6 +28,9 @@ import javafx.scene.control.TextArea;
 import javafx.stage.FileChooser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
@@ -88,7 +93,8 @@ public class AnalysisProgressController {
                 (ParsedSequence) succeeded.getSource().getValue());
             analyzer.setOnSucceeded(done -> {
               inProgress.set(false);
-              saveFile((ParsedSequence) done.getSource().getValue());
+              // saveFile((ParsedSequence) done.getSource().getValue());
+              saveFile2((ParsedSequence) done.getSource().getValue());
               stageManager.switchScene(FXMLView.MAIN_SCREEN);
             });
 
@@ -117,6 +123,174 @@ public class AnalysisProgressController {
       }
     });
   }
+
+  private void saveFile2(ParsedSequence parsedSequence) {
+    XSSFWorkbook workbook = new XSSFWorkbook();
+    XSSFSheet firstSheet = workbook.createSheet();
+    firstSheet.setDefaultColumnWidth(15);
+    XSSFSheet secondSheet = workbook.createSheet();
+    secondSheet.setDefaultColumnWidth(15);
+
+    int firstSheetRowCount = 0, secondSheetRowCount = 0;
+    XSSFRow row = firstSheet.createRow(firstSheetRowCount++);
+
+    XSSFCell cell = row.createCell(0);
+    cell.setCellValue("Header:");
+
+    cell = row.createCell(1);
+    cell.setCellValue(parsedSequence.getHeader());
+    firstSheet.addMergedRegion(new CellRangeAddress(0, 0, 1, 9));
+
+    row = firstSheet.createRow(firstSheetRowCount++);
+    cell = row.createCell(0);
+    cell.setCellValue("Target Site:");
+
+    cell = row.createCell(1);
+    cell.setCellValue(parsedSequence.getTargetSite());
+    firstSheet.addMergedRegion(new CellRangeAddress(1, 1, 1, 9));
+
+    // Insert empty row
+    firstSheetRowCount++;
+
+    CellStyle cellStyle = workbook.createCellStyle();
+    cellStyle.setWrapText(true); //Set wordwrap
+    cellStyle.setAlignment(HorizontalAlignment.CENTER);
+    cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+
+    row = firstSheet.createRow(firstSheetRowCount++);
+    cell = row.createCell(0);
+    cell.setCellValue("ID");
+    cell = row.createCell(1);
+    cell.setCellStyle(cellStyle);
+    cell.setCellValue("Generated From");
+    cell = row.createCell(2);
+    cell.setCellValue("Protonav");
+    cell = row.createCell(3);
+    cell.setCellValue("Palimentary");
+
+    row = secondSheet.createRow(secondSheetRowCount++);
+    cell = row.createCell(0);
+    cell.setCellValue("ID");
+    cell = row.createCell(1);
+    cell.setCellValue("Indices");
+    cell = row.createCell(2);
+    cell.setCellStyle(cellStyle);
+    cell.setCellValue("Protonav Left Correlations");
+    cell = row.createCell(3);
+    cell.setCellStyle(cellStyle);
+    cell.setCellValue("Palimentary Left Correlations");
+    cell = row.createCell(4);
+    cell.setCellStyle(cellStyle);
+    cell.setCellValue("Protonav Right Correlations");
+    cell = row.createCell(5);
+    cell.setCellStyle(cellStyle);
+    cell.setCellValue("Palimentary Right Correlations");
+
+    final List<ProtonavPair> correlations = parsedSequence.getProtonavPairsCorrelations();
+    correlations.sort(new Comparator<ProtonavPair>() {
+      @Override
+      public int compare(ProtonavPair o1, ProtonavPair o2) {
+        return o1.getProtonav().getPattern().compareToIgnoreCase(o2.getProtonav().getPattern());
+      }
+    });
+
+    int[] rowsCount = writeCorrelations(parsedSequence.getLeftSequence(), firstSheetRowCount, firstSheet,
+        secondSheetRowCount, secondSheet);
+    writeCorrelations(parsedSequence.getRightSequence(), rowsCount[0], firstSheet, rowsCount[1],
+        secondSheet);
+
+    // rowCount = 4;
+    // row = sheet.createRow(rowCount++);
+    // cell = row.createCell(8);
+    // cell.setCellValue("Indices");
+    // cell = row.createCell(9);
+    // cell.setCellStyle(cellStyle);
+    // cell.setCellValue("Protonav Left Occurrences");
+    // cell = row.createCell(10);
+    // cell.setCellStyle(cellStyle);
+    // cell.setCellValue("Palimentary Left Occurrences");
+    // cell = row.createCell(11);
+    // cell.setCellStyle(cellStyle);
+    // cell.setCellValue("Protonav Right Occurrences");
+    // cell = row.createCell(12);
+    // cell.setCellStyle(cellStyle);
+    // cell.setCellValue("Palimentary Right Occurrences");
+
+    fileChooser.setInitialFileName(parsedSequence.getHeader().substring(1) + ".xlsx");
+    File outputFile = fileChooser.showSaveDialog(stageManager.getPrimaryStage());
+    try (OutputStream fileOut = new FileOutputStream(outputFile)) {
+      workbook.write(fileOut);
+    } catch (Exception e) {
+
+    }
+
+  }
+
+  private int[] writeCorrelations(Sequence sequence, int firstSheetRowCount, XSSFSheet firstSheet,
+      int secondSheetRowCount, XSSFSheet secondSheet) {
+    final String currentSide = sequence.getSide().toString();
+    final List<ProtonavPair> protonavPairs = sequence.getProtonavs();
+
+    XSSFRow row;
+    XSSFCell cell;
+
+    long ID;
+
+    CorrelationArrays protonavCorrelations, palimentaryCorrelations;
+    // int[] protonavLeftCorrelations, protonavRightCorrelations;
+    // int[] palimentaryLeftCorrelations, palimentaryRightCorrelations;
+    double[] protonavLeftCorrelations, protonavRightCorrelations;
+    double[] palimentaryLeftCorrelations, palimentaryRightCorrelations;
+
+    for (ProtonavPair pair : protonavPairs) {
+
+      row = firstSheet.createRow(firstSheetRowCount++);
+
+      ID = pair.getID();
+      cell = row.createCell(0);
+      cell.setCellValue(ID);
+
+      cell = row.createCell(1);
+      cell.setCellValue(currentSide);
+
+      cell = row.createCell(2);
+      cell.setCellValue(pair.getProtonav().getPattern());
+      cell = row.createCell(3);
+      cell.setCellValue(pair.getPalimentary().getPattern());
+
+      protonavCorrelations = pair.getProtonav().getCorrelationArrays();
+      palimentaryCorrelations = pair.getPalimentary().getCorrelationArrays();
+      // protonavLeftCorrelations = protonavCorrelations.getCorrelationsOnLeft();
+      // protonavRightCorrelations = protonavCorrelations.getCorrelationsOnRight();
+      // palimentaryLeftCorrelations = palimentaryCorrelations.getCorrelationsOnLeft();
+      // palimentaryRightCorrelations = palimentaryCorrelations.getCorrelationsOnRight();
+      protonavLeftCorrelations = protonavCorrelations.getSmoothedCorrelationsOnLeft();
+      protonavRightCorrelations = protonavCorrelations.getSmoothedCorrelationsOnRight();
+      palimentaryLeftCorrelations = palimentaryCorrelations.getSmoothedCorrelationsOnLeft();
+      palimentaryRightCorrelations = palimentaryCorrelations.getSmoothedCorrelationsOnRight();
+
+
+      for (int index = 0; index < 99; index++) {
+        row = secondSheet.createRow(secondSheetRowCount++);
+        cell = row.createCell(0);
+        cell.setCellValue(ID);
+        cell = row.createCell(1);
+        cell.setCellValue(index);
+        cell = row.createCell(2);
+        cell.setCellValue(protonavLeftCorrelations[index]);
+        cell = row.createCell(3);
+        cell.setCellValue(palimentaryLeftCorrelations[index]);
+        cell = row.createCell(4);
+        cell.setCellValue(protonavRightCorrelations[index]);
+        cell = row.createCell(5);
+        cell.setCellValue(palimentaryRightCorrelations[index]);
+      }
+
+    }
+
+    return new int[]{firstSheetRowCount, secondSheetRowCount};
+  }
+
 
   private void saveFile(ParsedSequence parsedSequence) {
     XSSFWorkbook workbook = new XSSFWorkbook();

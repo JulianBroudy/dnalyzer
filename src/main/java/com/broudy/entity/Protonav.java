@@ -13,14 +13,25 @@ public class Protonav {
   private final String pattern;
   private final Occurrences occurrences;
   private final ProtonavProbabilities probabilities;
+  private final CorrelationArrays correlationArrays;
   private Results results;
 
   public Protonav(String pattern, ProtonavProbabilities probabilities) {
     this.pattern = pattern;
     this.probabilities = probabilities;
     this.occurrences = new Occurrences();
+    this.correlationArrays = null;
     this.results = new Results();
   }
+
+  public Protonav(String pattern) {
+    this.pattern = pattern;
+    this.probabilities = null;
+    this.occurrences = new Occurrences();
+    this.correlationArrays = new CorrelationArrays();
+    this.results = new Results();
+  }
+
 
   /**
    * Gets the pattern.
@@ -47,6 +58,15 @@ public class Protonav {
    */
   public ProtonavProbabilities getProbabilities() {
     return probabilities;
+  }
+
+  /**
+   * Gets the correlationArrays.
+   *
+   * @return correlationArrays's value.
+   */
+  public CorrelationArrays getCorrelationArrays() {
+    return correlationArrays;
   }
 
   /**

@@ -1,6 +1,8 @@
 package com.broudy.entity;
 
 import com.broudy.entity.Sequence.SequenceSide;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class represents a parsed sequence file which contains the sequenceUnderTest header, target
@@ -17,6 +19,7 @@ public class ParsedSequence {
   private final Sequence leftSequence;
   private final Sequence rightSequence;
   private final int minPatternLength, maxPatternLength;
+  private final List<ProtonavPair> protonavPairsCorrelations;
 
 
   public ParsedSequence(String header, String sequenceBeforeTargetSite, String targetSite,
@@ -27,6 +30,7 @@ public class ParsedSequence {
     this.rightSequence = new Sequence(SequenceSide.RIGHT, sequenceAfterTargetSite);
     this.minPatternLength = minPatternLength;
     this.maxPatternLength = maxPatternLength;
+    this.protonavPairsCorrelations = new ArrayList<>();
   }
 
   /**
@@ -81,6 +85,15 @@ public class ParsedSequence {
    */
   public int getMaxPatternLength() {
     return maxPatternLength;
+  }
+
+  /**
+   * Gets the protonavPairsCorrelations.
+   *
+   * @return protonavPairsCorrelations's value.
+   */
+  public List<ProtonavPair> getProtonavPairsCorrelations() {
+    return protonavPairsCorrelations;
   }
 
   @Override

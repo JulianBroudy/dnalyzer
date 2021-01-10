@@ -1,7 +1,10 @@
 package com.broudy.control;
 
+import com.broudy.control.CorrelationArrayGetter.LeftCorrelationArraysGetter;
+import com.broudy.control.CorrelationArrayGetter.RightCorrelationArraysGetter;
 import com.broudy.control.ResultsFilter.MoreOnLeftFilter;
 import com.broudy.control.ResultsFilter.MoreOnRightFilter;
+import com.broudy.entity.CorrelationArrays;
 import com.broudy.entity.ParsedSequence;
 import com.broudy.entity.Protonav;
 import com.broudy.entity.ProtonavPair;
@@ -12,6 +15,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -27,6 +31,8 @@ import javafx.concurrent.Task;
  */
 public class Analyzer extends Task<ParsedSequence> {
 
+  private List<String> possiblePatterns = new ArrayList<>();
+  private final HashMap<String, Integer> protonavPairsIDs = new HashMap<>();
   private final ParsedSequence parsedSequence;
   private double[] probabilitiesOfSinglesOnLeft;
   private double[] probabilitiesOfSinglesOnRight;
@@ -45,50 +51,199 @@ public class Analyzer extends Task<ParsedSequence> {
     this.PAIRS_COUNT = 0;
   }
 
+  // The main function that recursively prints
+  // all repeated permutations of the given string.
+  // It uses data[] to store all permutations one by one
+  private void allLexicographicRecur(String str, char[] data, int last, int index) {
+    int length = str.length();
+
+    // One by one fix all characters at the given index
+    // and recur for the subsequent indexes
+    for (int i = 0; i < length; i++) {
+
+      // Fix the ith character at index and if
+      // this is not the last index then
+      // recursively call for higher indexes
+      data[index] = str.charAt(i);
+
+      // If this is the last index then print
+      // the string stored in data[]
+      if (index == last) {
+        possiblePatterns.add(new String(data));
+      } else {
+        allLexicographicRecur(str, data, last, index + 1);
+      }
+    }
+  }
+
+  // This function sorts input string, allocate memory
+  // for data(needed for allLexicographicRecur()) and calls
+  // allLexicographicRecur() for printing all permutations
+  private void allLexicographic(String str, int length) {
+
+    // Create a temp array that will be used by
+    // allLexicographicRecur()
+    char[] data = new char[length];
+    char[] temp = str.toCharArray();
+
+    // Sort the input string so that we get all
+    // output strings in lexicographically sorted order
+    Arrays.sort(temp);
+    str = new String(temp);
+
+    // Now print all permutaions
+    allLexicographicRecur(str, data, length - 1, 0);
+  }
+
   @Override
   protected ParsedSequence call() throws Exception {
 
-    return analyzeOccurrenceProbabilities();
+    ProtonavPair.setPairsCount(0);
 
-    /*final int WINDOW = 500;
-    final int MIN_LEN = 2;
+    // return analyzeOccurrenceProbabilities();
+
+    return analyzeCorrelations();
+
+
+  }
+
+  private void generateProtonavPairIds(int min, int max) {
+
+    int ID = 1;
+
+    final HashSet<String> done = new HashSet<>();
+
+    for (int len = min; len <= max; len++) {
+      allLexicographic("ACGT", len);
+    }
+
+    Comparator<String> lenThenAlphaComparator = (o1, o2) -> {
+      if (o1.length() != o2.length()) {
+        return o1.length() - o2.length(); //overflow impossible since lengths are non-negative
+      }
+      return o1.compareTo(o2);
+    };
+
+    possiblePatterns.sort(lenThenAlphaComparator);
+
+    String palimentary;
+    for (String pattern : possiblePatterns) {
+      if (!done.contains(pattern)) {
+        palimentary = getPalindromicComplementaryPattern(pattern);
+        done.add(pattern);
+        done.add(palimentary);
+        protonavPairsIDs.put(pattern, ID);
+        protonavPairsIDs.put(palimentary, ID++);
+      }
+    }
+  }
+
+  private ParsedSequence analyzeCorrelations() {
+
+    final int FILTER_SIZE = 100;
+    final int MIN_LEN = 1;
     final int MAX_LEN = 3;
 
-    HashMap<String, int[]> patternsCorrelations = new HashMap<>();
+    generateProtonavPairIds(MIN_LEN, MAX_LEN);
 
-    HashSet<String> patterns = new HashSet<>();
+    final int WINDOW = 100000;
 
-    final String sequence = parsedSequence.getLeftSequence().getSequence();
+    HashMap<String, CorrelationArrays> patternsCorrelationArrays = new HashMap<>();
 
-    final int from = sequence.length()-10000-WINDOW;
-    final int to = sequence.length() - WINDOW;
-    final String sequenceUnderTest = sequence.substring(from);
+    String sequenceString = parsedSequence.getLeftSequence().getSequence();
+    int from = sequenceString.length() - WINDOW - FILTER_SIZE;
+    String sequenceUnderTest = sequenceString.substring(from);
+
+    final List<ProtonavPair> protonavPairsCorrelations = parsedSequence
+        .getProtonavPairsCorrelations();
+
+    parsedSequence.getLeftSequence().getProtonavs().addAll(
+        getCorrelations(sequenceUnderTest, WINDOW, FILTER_SIZE, MIN_LEN, MAX_LEN,
+            patternsCorrelationArrays, new LeftCorrelationArraysGetter()));
+    protonavPairsCorrelations.addAll(parsedSequence.getLeftSequence().getProtonavs());
+
+    sequenceString = parsedSequence.getRightSequence().getSequence();
+    sequenceUnderTest = sequenceString.substring(0, WINDOW + FILTER_SIZE);
+
+    parsedSequence.getRightSequence().getProtonavs().addAll(
+        getCorrelations(sequenceUnderTest, WINDOW, FILTER_SIZE, MIN_LEN, MAX_LEN,
+            patternsCorrelationArrays, new RightCorrelationArraysGetter()));
+
+    protonavPairsCorrelations.addAll(parsedSequence.getRightSequence().getProtonavs());
+
+    // Update smoothed correlations
+    int[] leftCorrelationArray, rightCorrelationArray;
+    double[] leftSmoothedCorrelationArray, rightSmoothedCorrelationArray;
+    final int len = FILTER_SIZE - 1;
+    for (CorrelationArrays correlationArrays : patternsCorrelationArrays.values()) {
+      leftCorrelationArray = correlationArrays.getCorrelationsOnLeft();
+      rightCorrelationArray = correlationArrays.getCorrelationsOnRight();
+      leftSmoothedCorrelationArray = correlationArrays.getSmoothedCorrelationsOnLeft();
+      rightSmoothedCorrelationArray = correlationArrays.getSmoothedCorrelationsOnRight();
+      for (int index = 2; index < len; index++) {
+        leftSmoothedCorrelationArray[index] =
+            (double) (leftCorrelationArray[index - 1] + leftCorrelationArray[index]
+                + leftCorrelationArray[index + 1]) / 3;
+        rightSmoothedCorrelationArray[index] =
+            (double) (rightCorrelationArray[index - 1] + rightCorrelationArray[index]
+                + rightCorrelationArray[index + 1]) / 3;
+      }
+
+    }
+
+    return parsedSequence;
+  }
+
+  private List<ProtonavPair> getCorrelations(String sequenceUnderTest, int WINDOW, int FILTER_SIZE,
+      int MIN_LEN, int MAX_LEN, HashMap<String, CorrelationArrays> patternsCorrelationArrays,
+      CorrelationArrayGetter correlationsGetter) {
+    final List<ProtonavPair> protonavPairs = new ArrayList<>();
 
     final PatternCounter patternCounter = new PatternCounter();
 
-    for (int i = 0; i < 10000; i++) {
+    int progress = 0;
+    final int totalProgress = WINDOW * 2;
+    updateProgress(progress++, totalProgress);
 
-      final String searchArea = sequenceUnderTest.substring(i, i + WINDOW);
+    CorrelationArrays correlationArrays;
+    for (int i = 0; i < WINDOW; i++) {
+
+      final String searchArea = sequenceUnderTest.substring(i, i + FILTER_SIZE);
 
       for (int len = MIN_LEN; len <= MAX_LEN; len++) {
 
         final String pattern = sequenceUnderTest.substring(i, i + len);
-        final int[] array;
-        if (patterns.contains(pattern)) {
-          array = patternsCorrelations.get(pattern);
+
+        if (patternsCorrelationArrays.containsKey(pattern)) {
+          correlationArrays = patternsCorrelationArrays.get(pattern);
         } else {
-          array = new int[500];
-          patterns.add(pattern);
-          patternsCorrelations.put(pattern, array);
+          final Protonav patternProtonav = new Protonav(pattern);
+          correlationArrays = patternProtonav.getCorrelationArrays();
+          patternsCorrelationArrays.put(pattern, correlationArrays);
+
+          final String palimentary = getPalindromicComplementaryPattern(pattern);
+          final Protonav palimentaryProtonav = new Protonav(palimentary);
+          patternsCorrelationArrays.put(palimentary, palimentaryProtonav.getCorrelationArrays());
+
+          protonavPairs.add(new ProtonavPair(protonavPairsIDs.get(pattern), patternProtonav,
+              palimentaryProtonav));
         }
-        patternCounter.updateCorrelationArray(pattern, searchArea, array);
+        patternCounter.updateCorrelationArray(pattern, searchArea,
+            correlationsGetter.getCorrelationArray(correlationArrays));
+        updateProgress(progress++, totalProgress);
       }
     }
 
-    patternsCorrelations.forEach((key, value) -> System.out.println(key + ":\n" + Arrays.toString(value)+"\n"));
+    return protonavPairs;
+  }
 
-    return parsedSequence;*/
-
+  private String getPalindromicComplementaryPattern(String pattern) {
+    final StringBuilder palimentary = new StringBuilder();
+    final char[] patternCharArray = pattern.toCharArray();
+    for (char nucleotide : patternCharArray) {
+      palimentary.append(getPalindromicComplementaryNucleotide(nucleotide));
+    }
+    return palimentary.reverse().toString();
   }
 
   private ParsedSequence analyzeOccurrenceProbabilities() {
@@ -236,7 +391,6 @@ public class Analyzer extends Task<ParsedSequence> {
 
     final List<String> newPatterns = new ArrayList<>(simplePatterns);
     newPatterns.removeAll(generatedPatterns);
-
 
     double patternLeftProbabilityBySingles;
     double patternRightProbabilityBySingles;
