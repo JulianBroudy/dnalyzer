@@ -32,6 +32,7 @@ import javafx.concurrent.Task;
 public class Analyzer extends Task<ParsedSequence> {
 
   private List<String> possiblePatterns = new ArrayList<>();
+  private List<ProtonavPair> protonavPairs = new ArrayList<>();
   private final HashMap<String, Integer> protonavPairsIDs = new HashMap<>();
   private final ParsedSequence parsedSequence;
   private double[] probabilitiesOfSinglesOnLeft;
@@ -181,10 +182,10 @@ public class Analyzer extends Task<ParsedSequence> {
       leftSmoothedCorrelationArray = correlationArrays.getSmoothedCorrelationsOnLeft();
       rightSmoothedCorrelationArray = correlationArrays.getSmoothedCorrelationsOnRight();
       for (int index = 2; index < len; index++) {
-        leftSmoothedCorrelationArray[index] =
+        leftSmoothedCorrelationArray[index-1] =
             (double) (leftCorrelationArray[index - 1] + leftCorrelationArray[index]
                 + leftCorrelationArray[index + 1]) / 3;
-        rightSmoothedCorrelationArray[index] =
+        rightSmoothedCorrelationArray[index-1] =
             (double) (rightCorrelationArray[index - 1] + rightCorrelationArray[index]
                 + rightCorrelationArray[index + 1]) / 3;
       }

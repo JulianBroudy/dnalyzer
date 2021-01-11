@@ -14,7 +14,10 @@ import com.broudy.entity.Sequence;
 import com.broudy.entity.SequenceToBeParsed;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -36,6 +39,7 @@ import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbookFactory;
 
 /**
  * TODO provide a summary to AnalysisProgressController class!!!!!
@@ -94,7 +98,7 @@ public class AnalysisProgressController {
             analyzer.setOnSucceeded(done -> {
               inProgress.set(false);
               // saveFile((ParsedSequence) done.getSource().getValue());
-              saveFile2((ParsedSequence) done.getSource().getValue());
+              saveFile3((ParsedSequence) done.getSource().getValue());
               stageManager.switchScene(FXMLView.MAIN_SCREEN);
             });
 
@@ -122,6 +126,60 @@ public class AnalysisProgressController {
         // Show results
       }
     });
+  }
+
+  private void saveFile3(ParsedSequence parsedSequence) {
+    URL resource = getClass().getResource("/com/broudy/Excel/FILTER_100_TEMPLATE.xlsx");
+    if (resource == null) {
+      throw new IllegalArgumentException("file not found!");
+    } else {
+
+      // failed if files have whitespaces or special characters
+      //return new File(resource.getFile());
+
+      try {
+        XSSFWorkbook workbook = (XSSFWorkbook) XSSFWorkbookFactory
+            .create(new File(resource.toURI()));
+        XSSFSheet firstSheet = workbook.getSheetAt(0);
+        XSSFSheet secondSheet = workbook.getSheetAt(1);
+
+        XSSFRow row = firstSheet.getRow(0);
+        XSSFCell cell = row.getCell(1);
+        cell.setCellValue(parsedSequence.getHeader());
+        firstSheet.addMergedRegion(new CellRangeAddress(0, 0, 1, 9));
+        row = firstSheet.getRow(1);
+        cell = row.getCell(1);
+        cell.setCellValue(parsedSequence.getTargetSite());
+        firstSheet.addMergedRegion(new CellRangeAddress(1, 1, 1, 9));
+
+        int firstSheetRowCount = 4, secondSheetRowCount = 1;
+        final List<ProtonavPair> correlations = parsedSequence.getProtonavPairsCorrelations();
+        correlations.sort(new Comparator<ProtonavPair>() {
+          @Override
+          public int compare(ProtonavPair o1, ProtonavPair o2) {
+            return o1.getProtonav().getPattern().compareToIgnoreCase(o2.getProtonav().getPattern());
+          }
+        });
+
+        int[] rowsCount = writeCorrelations(parsedSequence.getLeftSequence(), firstSheetRowCount,
+            firstSheet, secondSheetRowCount, secondSheet);
+        writeCorrelations(parsedSequence.getRightSequence(), rowsCount[0], firstSheet, rowsCount[1],
+            secondSheet);
+
+        fileChooser.setInitialFileName(parsedSequence.getHeader().substring(1) + ".xlsx");
+        File outputFile = fileChooser.showSaveDialog(stageManager.getPrimaryStage());
+        try (OutputStream fileOut = new FileOutputStream(outputFile)) {
+          workbook.write(fileOut);
+        } catch (Exception e) {
+
+        }
+
+      } catch (URISyntaxException | IOException e) {
+        e.printStackTrace();
+      }
+    }
+
+
   }
 
   private void saveFile2(ParsedSequence parsedSequence) {
@@ -194,8 +252,8 @@ public class AnalysisProgressController {
       }
     });
 
-    int[] rowsCount = writeCorrelations(parsedSequence.getLeftSequence(), firstSheetRowCount, firstSheet,
-        secondSheetRowCount, secondSheet);
+    int[] rowsCount = writeCorrelations(parsedSequence.getLeftSequence(), firstSheetRowCount,
+        firstSheet, secondSheetRowCount, secondSheet);
     writeCorrelations(parsedSequence.getRightSequence(), rowsCount[0], firstSheet, rowsCount[1],
         secondSheet);
 
@@ -230,6 +288,13 @@ public class AnalysisProgressController {
       int secondSheetRowCount, XSSFSheet secondSheet) {
     final String currentSide = sequence.getSide().toString();
     final List<ProtonavPair> protonavPairs = sequence.getProtonavs();
+
+    protonavPairs.sort(new Comparator<ProtonavPair>() {
+      @Override
+      public int compare(ProtonavPair o1, ProtonavPair o2) {
+        return o1.getProtonav().getPattern().compareToIgnoreCase(o2.getProtonav().getPattern());
+      }
+    });
 
     XSSFRow row;
     XSSFCell cell;
@@ -269,8 +334,7 @@ public class AnalysisProgressController {
       palimentaryLeftCorrelations = palimentaryCorrelations.getSmoothedCorrelationsOnLeft();
       palimentaryRightCorrelations = palimentaryCorrelations.getSmoothedCorrelationsOnRight();
 
-
-      for (int index = 0; index < 99; index++) {
+      for (int index = 1; index < 98; index++) {
         row = secondSheet.createRow(secondSheetRowCount++);
         cell = row.createCell(0);
         cell.setCellValue(ID);
