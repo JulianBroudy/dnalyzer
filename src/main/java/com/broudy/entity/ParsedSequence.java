@@ -14,23 +14,36 @@ import java.util.List;
  */
 public class ParsedSequence {
 
+  private final String fileName;
   private final String header;
   private final String targetSite;
   private final Sequence leftSequence;
   private final Sequence rightSequence;
   private final int minPatternLength, maxPatternLength;
+  private final int filterSize;
   private final List<ProtonavPair> protonavPairsCorrelations;
 
 
-  public ParsedSequence(String header, String sequenceBeforeTargetSite, String targetSite,
-      String sequenceAfterTargetSite, int minPatternLength, int maxPatternLength) {
+  public ParsedSequence(String fileName, String header, String sequenceBeforeTargetSite, String targetSite,
+      String sequenceAfterTargetSite, int minPatternLength, int maxPatternLength, int filterSize) {
+    this.fileName = fileName;
     this.header = header;
     this.targetSite = targetSite;
     this.leftSequence = new Sequence(SequenceSide.LEFT, sequenceBeforeTargetSite);
     this.rightSequence = new Sequence(SequenceSide.RIGHT, sequenceAfterTargetSite);
     this.minPatternLength = minPatternLength;
     this.maxPatternLength = maxPatternLength;
+    this.filterSize = filterSize;
     this.protonavPairsCorrelations = new ArrayList<>();
+  }
+
+  /**
+   * Gets the fileName.
+   *
+   * @return fileName's value.
+   */
+  public String getFileName() {
+    return fileName;
   }
 
   /**

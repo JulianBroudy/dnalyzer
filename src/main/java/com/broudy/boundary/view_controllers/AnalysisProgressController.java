@@ -129,7 +129,7 @@ public class AnalysisProgressController {
   }
 
   private void saveFile3(ParsedSequence parsedSequence) {
-    URL resource = getClass().getResource("/com/broudy/Excel/FILTER_100_TEMPLATE.xlsx");
+    URL resource = getClass().getResource("/com/broudy/Excel/FILTER_500_TEMPLATE.xlsx");
     if (resource == null) {
       throw new IllegalArgumentException("file not found!");
     } else {
@@ -161,12 +161,17 @@ public class AnalysisProgressController {
           }
         });
 
-        int[] rowsCount = writeCorrelations(parsedSequence.getLeftSequence(), firstSheetRowCount,
-            firstSheet, secondSheetRowCount, secondSheet);
-        writeCorrelations(parsedSequence.getRightSequence(), rowsCount[0], firstSheet, rowsCount[1],
-            secondSheet);
+        writeCorrelations(correlations, firstSheet, firstSheetRowCount, secondSheet,
+            secondSheetRowCount);
 
-        fileChooser.setInitialFileName(parsedSequence.getHeader().substring(1) + ".xlsx");
+        // int[] rowsCount = writeCorrelations(parsedSequence.getLeftSequence(), firstSheetRowCount,
+        //     firstSheet, secondSheetRowCount, secondSheet);
+        // writeCorrelations(parsedSequence.getRightSequence(), rowsCount[0], firstSheet, rowsCount[1],
+        //     secondSheet);
+
+        fileChooser.setInitialFileName(
+            parsedSequence.getFileName().replaceFirst("[.][^.]+$", "") + "_" + parsedSequence
+                .getTargetSite() + "_FILTER_500" + ".xlsx");
         File outputFile = fileChooser.showSaveDialog(stageManager.getPrimaryStage());
         try (OutputStream fileOut = new FileOutputStream(outputFile)) {
           workbook.write(fileOut);
@@ -179,6 +184,68 @@ public class AnalysisProgressController {
       }
     }
 
+
+  }
+
+  private void writeCorrelations(List<ProtonavPair> correlations, XSSFSheet firstSheet,
+      int firstSheetRowCount, XSSFSheet secondSheet, int secondSheetRowCount) {
+
+    XSSFRow row;
+    XSSFCell cell;
+
+    long ID;
+
+    CorrelationArrays protonavCorrelations, palimentaryCorrelations;
+    // int[] protonavLeftCorrelations, protonavRightCorrelations;
+    // int[] palimentaryLeftCorrelations, palimentaryRightCorrelations;
+    double[] protonavLeftCorrelations, protonavRightCorrelations;
+    double[] palimentaryLeftCorrelations, palimentaryRightCorrelations;
+
+    for (ProtonavPair pair : correlations) {
+
+      row = firstSheet.createRow(firstSheetRowCount++);
+
+      ID = pair.getID();
+      cell = row.createCell(0);
+      cell.setCellValue(ID);
+
+      cell = row.createCell(1);
+      cell.setCellValue("---");
+
+      cell = row.createCell(2);
+      cell.setCellValue(pair.getProtonav().getPattern());
+      cell = row.createCell(3);
+      cell.setCellValue(pair.getPalimentary().getPattern());
+
+      protonavCorrelations = pair.getProtonav().getCorrelationArrays();
+      palimentaryCorrelations = pair.getPalimentary().getCorrelationArrays();
+      // protonavLeftCorrelations = protonavCorrelations.getCorrelationsOnLeft();
+      // protonavRightCorrelations = protonavCorrelations.getCorrelationsOnRight();
+      // palimentaryLeftCorrelations = palimentaryCorrelations.getCorrelationsOnLeft();
+      // palimentaryRightCorrelations = palimentaryCorrelations.getCorrelationsOnRight();
+      protonavLeftCorrelations = protonavCorrelations.getSmoothedCorrelationsOnLeft();
+      protonavRightCorrelations = protonavCorrelations.getSmoothedCorrelationsOnRight();
+      palimentaryLeftCorrelations = palimentaryCorrelations.getSmoothedCorrelationsOnLeft();
+      palimentaryRightCorrelations = palimentaryCorrelations.getSmoothedCorrelationsOnRight();
+
+      // for (int index = 1; index < 98; index++) {
+      for (int index = 1; index < 498; index++) {
+        row = secondSheet.createRow(secondSheetRowCount++);
+        cell = row.createCell(0);
+        cell.setCellValue(ID);
+        cell = row.createCell(1);
+        cell.setCellValue(index);
+        cell = row.createCell(2);
+        cell.setCellValue(protonavLeftCorrelations[index]);
+        cell = row.createCell(3);
+        cell.setCellValue(palimentaryLeftCorrelations[index]);
+        cell = row.createCell(4);
+        cell.setCellValue(protonavRightCorrelations[index]);
+        cell = row.createCell(5);
+        cell.setCellValue(palimentaryRightCorrelations[index]);
+      }
+
+    }
 
   }
 

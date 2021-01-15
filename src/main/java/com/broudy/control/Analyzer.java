@@ -31,10 +31,11 @@ import javafx.concurrent.Task;
  */
 public class Analyzer extends Task<ParsedSequence> {
 
+  private final HashMap<String, Integer> protonavPairsIDs = new HashMap<>();
+  private final HashMap<String, Protonav> protonavs = new HashMap<>();
+  private final ParsedSequence parsedSequence;
   private List<String> possiblePatterns = new ArrayList<>();
   private List<ProtonavPair> protonavPairs = new ArrayList<>();
-  private final HashMap<String, Integer> protonavPairsIDs = new HashMap<>();
-  private final ParsedSequence parsedSequence;
   private double[] probabilitiesOfSinglesOnLeft;
   private double[] probabilitiesOfSinglesOnRight;
   private HashMap<String, Double> probabilitiesByPairsOnLeft;
@@ -110,6 +111,8 @@ public class Analyzer extends Task<ParsedSequence> {
 
   private void generateProtonavPairIds(int min, int max) {
 
+    HashMap<String, CorrelationArrays> patternsCorrelationArrays = new HashMap<>();
+
     int ID = 1;
 
     final HashSet<String> done = new HashSet<>();
@@ -133,15 +136,20 @@ public class Analyzer extends Task<ParsedSequence> {
         palimentary = getPalindromicComplementaryPattern(pattern);
         done.add(pattern);
         done.add(palimentary);
-        protonavPairsIDs.put(pattern, ID);
-        protonavPairsIDs.put(palimentary, ID++);
+        final Protonav originalProtonav = new Protonav(pattern);
+        final Protonav palimentaryProtonav = new Protonav(palimentary);
+        protonavs.put(pattern, originalProtonav);
+        protonavs.put(palimentary, palimentaryProtonav);
+        protonavPairs.add(new ProtonavPair(ID++, originalProtonav, palimentaryProtonav));
+        // protonavPairsIDs.put(pattern, ID);
+        // protonavPairsIDs.put(palimentary, ID++);
       }
     }
   }
 
   private ParsedSequence analyzeCorrelations() {
 
-    final int FILTER_SIZE = 100;
+    final int FILTER_SIZE = 500;
     final int MIN_LEN = 1;
     final int MAX_LEN = 3;
 
@@ -155,13 +163,13 @@ public class Analyzer extends Task<ParsedSequence> {
     int from = sequenceString.length() - WINDOW - FILTER_SIZE;
     String sequenceUnderTest = sequenceString.substring(from);
 
-    final List<ProtonavPair> protonavPairsCorrelations = parsedSequence
-        .getProtonavPairsCorrelations();
+    parsedSequence
+        .getProtonavPairsCorrelations().addAll(protonavPairs);
 
     parsedSequence.getLeftSequence().getProtonavs().addAll(
         getCorrelations(sequenceUnderTest, WINDOW, FILTER_SIZE, MIN_LEN, MAX_LEN,
             patternsCorrelationArrays, new LeftCorrelationArraysGetter()));
-    protonavPairsCorrelations.addAll(parsedSequence.getLeftSequence().getProtonavs());
+    // protonavPairsCorrelations.addAll(parsedSequence.getLeftSequence().getProtonavs());
 
     sequenceString = parsedSequence.getRightSequence().getSequence();
     sequenceUnderTest = sequenceString.substring(0, WINDOW + FILTER_SIZE);
@@ -170,7 +178,7 @@ public class Analyzer extends Task<ParsedSequence> {
         getCorrelations(sequenceUnderTest, WINDOW, FILTER_SIZE, MIN_LEN, MAX_LEN,
             patternsCorrelationArrays, new RightCorrelationArraysGetter()));
 
-    protonavPairsCorrelations.addAll(parsedSequence.getRightSequence().getProtonavs());
+    // protonavPairsCorrelations.addAll(parsedSequence.getRightSequence().getProtonavs());
 
     // Update smoothed correlations
     int[] leftCorrelationArray, rightCorrelationArray;
@@ -182,10 +190,10 @@ public class Analyzer extends Task<ParsedSequence> {
       leftSmoothedCorrelationArray = correlationArrays.getSmoothedCorrelationsOnLeft();
       rightSmoothedCorrelationArray = correlationArrays.getSmoothedCorrelationsOnRight();
       for (int index = 2; index < len; index++) {
-        leftSmoothedCorrelationArray[index-1] =
+        leftSmoothedCorrelationArray[index - 1] =
             (double) (leftCorrelationArray[index - 1] + leftCorrelationArray[index]
                 + leftCorrelationArray[index + 1]) / 3;
-        rightSmoothedCorrelationArray[index-1] =
+        rightSmoothedCorrelationArray[index - 1] =
             (double) (rightCorrelationArray[index - 1] + rightCorrelationArray[index]
                 + rightCorrelationArray[index + 1]) / 3;
       }
@@ -218,16 +226,17 @@ public class Analyzer extends Task<ParsedSequence> {
         if (patternsCorrelationArrays.containsKey(pattern)) {
           correlationArrays = patternsCorrelationArrays.get(pattern);
         } else {
-          final Protonav patternProtonav = new Protonav(pattern);
-          correlationArrays = patternProtonav.getCorrelationArrays();
+          correlationArrays = protonavs.get(pattern).getCorrelationArrays();
+          // final Protonav patternProtonav = new Protonav(pattern);
+          // correlationArrays = patternProtonav.getCorrelationArrays();
           patternsCorrelationArrays.put(pattern, correlationArrays);
 
-          final String palimentary = getPalindromicComplementaryPattern(pattern);
-          final Protonav palimentaryProtonav = new Protonav(palimentary);
-          patternsCorrelationArrays.put(palimentary, palimentaryProtonav.getCorrelationArrays());
+          // final String palimentary = getPalindromicComplementaryPattern(pattern);
+          // final Protonav palimentaryProtonav = new Protonav(palimentary);
+          // patternsCorrelationArrays.put(palimentary, palimentaryProtonav.getCorrelationArrays());
 
-          protonavPairs.add(new ProtonavPair(protonavPairsIDs.get(pattern), patternProtonav,
-              palimentaryProtonav));
+          // protonavPairs.add(new ProtonavPair(protonavPairsIDs.get(pattern), patternProtonav,
+          //     palimentaryProtonav));
         }
         patternCounter.updateCorrelationArray(pattern, searchArea,
             correlationsGetter.getCorrelationArray(correlationArrays));

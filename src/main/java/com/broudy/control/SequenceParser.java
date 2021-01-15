@@ -33,6 +33,7 @@ public class SequenceParser extends Task<ParsedSequence> {
   @Override
   protected ParsedSequence call() throws Exception {
     final File file = sequenceToBeParsed.getDnaSequence();
+
     String header = "No Header";
     final StringBuilder sequence = new StringBuilder("");
     final long totalNumberOfBytes = Files.size(Paths.get(file.getPath())) + 2;
@@ -67,6 +68,10 @@ public class SequenceParser extends Task<ParsedSequence> {
     }
 
     updateTitle("Finishing up...");
+
+    final String fileName = file.getName();
+    final int filterSize = 100;
+
     final ParsedSequence parsedSequence;
 
     if (sequenceToBeParsed.isCyclic()) {
@@ -79,28 +84,28 @@ public class SequenceParser extends Task<ParsedSequence> {
           "lLength: " + lLength + "\trLength: " + rLength + "\twithout: " + lengthWithoutTarget
               + "\thalfSum: " + halfTheSum);
       if (lLength > rLength) {
-        parsedSequence = new ParsedSequence(header,
+        parsedSequence = new ParsedSequence(fileName,header,
             sequence.substring((lLength - halfTheSum), sequenceToBeParsed.getStartIndex() - 1),
             sequence.substring(sequenceToBeParsed.getStartIndex() - 1,
                 sequenceToBeParsed.getEndIndex()),
             sequence.substring(sequenceToBeParsed.getEndIndex())
                 .concat(sequence.substring(0, lLength - halfTheSum)), sequenceToBeParsed.getMinPatternLength(),
-            sequenceToBeParsed.getMaxPatternLength());
+            sequenceToBeParsed.getMaxPatternLength(), filterSize);
       } else {
-        parsedSequence = new ParsedSequence(header,
+        parsedSequence = new ParsedSequence(fileName,header,
             sequence.substring(sequence.length() - (halfTheSum - lLength))
                 .concat(sequence.substring(0, sequenceToBeParsed.getStartIndex() - 1)), sequence
             .substring(sequenceToBeParsed.getStartIndex() - 1, sequenceToBeParsed.getEndIndex()),
             sequence.substring(sequenceToBeParsed.getEndIndex(),
                 sequence.length() - (halfTheSum - lLength)), sequenceToBeParsed.getMinPatternLength(),
-            sequenceToBeParsed.getMaxPatternLength());
+            sequenceToBeParsed.getMaxPatternLength(), filterSize);
       }
     } else {
-      parsedSequence = new ParsedSequence(header,
+      parsedSequence = new ParsedSequence(fileName,header,
           sequence.substring(0, sequenceToBeParsed.getStartIndex() - 1), sequence
           .substring(sequenceToBeParsed.getStartIndex() - 1, sequenceToBeParsed.getEndIndex()),
           sequence.substring(sequenceToBeParsed.getEndIndex() + 1), sequenceToBeParsed.getMinPatternLength(),
-          sequenceToBeParsed.getMaxPatternLength());
+          sequenceToBeParsed.getMaxPatternLength(), filterSize);
     }
     System.out.println("Target Site:\t" + parsedSequence.getTargetSite());
     System.out.println("Before: "+parsedSequence.getLeftSequence().getSequence().length()
