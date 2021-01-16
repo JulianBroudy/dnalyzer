@@ -84,32 +84,36 @@ public class SequenceParser extends Task<ParsedSequence> {
           "lLength: " + lLength + "\trLength: " + rLength + "\twithout: " + lengthWithoutTarget
               + "\thalfSum: " + halfTheSum);
       if (lLength > rLength) {
-        parsedSequence = new ParsedSequence(fileName,header,
+        parsedSequence = new ParsedSequence(fileName, header,
             sequence.substring((lLength - halfTheSum), sequenceToBeParsed.getStartIndex() - 1),
             sequence.substring(sequenceToBeParsed.getStartIndex() - 1,
                 sequenceToBeParsed.getEndIndex()),
             sequence.substring(sequenceToBeParsed.getEndIndex())
-                .concat(sequence.substring(0, lLength - halfTheSum)), sequenceToBeParsed.getMinPatternLength(),
-            sequenceToBeParsed.getMaxPatternLength(), filterSize);
+                .concat(sequence.substring(0, lLength - halfTheSum)),
+            sequenceToBeParsed.getMinPatternLength(), sequenceToBeParsed.getMaxPatternLength(),
+            filterSize);
       } else {
-        parsedSequence = new ParsedSequence(fileName,header,
+        parsedSequence = new ParsedSequence(fileName, header,
             sequence.substring(sequence.length() - (halfTheSum - lLength))
                 .concat(sequence.substring(0, sequenceToBeParsed.getStartIndex() - 1)), sequence
             .substring(sequenceToBeParsed.getStartIndex() - 1, sequenceToBeParsed.getEndIndex()),
             sequence.substring(sequenceToBeParsed.getEndIndex(),
-                sequence.length() - (halfTheSum - lLength)), sequenceToBeParsed.getMinPatternLength(),
-            sequenceToBeParsed.getMaxPatternLength(), filterSize);
+                sequence.length() - (halfTheSum - lLength)),
+            sequenceToBeParsed.getMinPatternLength(), sequenceToBeParsed.getMaxPatternLength(),
+            filterSize);
       }
     } else {
-      parsedSequence = new ParsedSequence(fileName,header,
-          sequence.substring(0, sequenceToBeParsed.getStartIndex() - 1), sequence
-          .substring(sequenceToBeParsed.getStartIndex() - 1, sequenceToBeParsed.getEndIndex()),
-          sequence.substring(sequenceToBeParsed.getEndIndex() + 1), sequenceToBeParsed.getMinPatternLength(),
-          sequenceToBeParsed.getMaxPatternLength(), filterSize);
+      parsedSequence = new ParsedSequence(fileName, header,
+          sequence.substring(0, sequenceToBeParsed.getStartIndex() - 1),
+          sequence.substring(sequenceToBeParsed.getStartIndex() - 1, sequenceToBeParsed.getEndIndex()),
+          sequence.substring(sequenceToBeParsed.getEndIndex() + 1),
+          sequenceToBeParsed.getMinPatternLength(), sequenceToBeParsed.getMaxPatternLength(),
+          filterSize);
     }
     System.out.println("Target Site:\t" + parsedSequence.getTargetSite());
-    System.out.println("Before: "+parsedSequence.getLeftSequence().getSequence().length()
-    +"\tAfter: "+parsedSequence.getRightSequence().getSequence().length());
+    System.out.println(
+        "Before: " + parsedSequence.getLeftSequence().getSequence().length() + "\tAfter: "
+            + parsedSequence.getRightSequence().getSequence().length());
     updateProgress(1, 1);
     updateTitle("Done");
 

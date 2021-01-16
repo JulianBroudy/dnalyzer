@@ -14,11 +14,11 @@ public class CorrelationArrays {
   private final double[] smoothedCorrelationsOnLeft;
   private final double[] smoothedCorrelationsOnRight;
 
-  public CorrelationArrays() {
-    this.correlationsOnLeft = new int[500];
-    this.correlationsOnRight= new int[500];
-    this.smoothedCorrelationsOnLeft = new double[499];
-    this.smoothedCorrelationsOnRight = new double[499];
+  public CorrelationArrays(int windowSize) {
+    this.correlationsOnLeft = new int[windowSize];
+    this.correlationsOnRight= new int[windowSize];
+    this.smoothedCorrelationsOnLeft = new double[windowSize-1];
+    this.smoothedCorrelationsOnRight = new double[windowSize-1];
     // this.correlationsOnLeft = new int[100];
     // this.correlationsOnRight= new int[100];
     // this.smoothedCorrelationsOnLeft = new double[99];

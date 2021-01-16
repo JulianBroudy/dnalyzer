@@ -9,8 +9,9 @@ package com.broudy.entity;
  */
 public class ProtonavProbabilities {
 
-  final double leftProbabilityBySingles, rightProbabilityBySingles;
-  double leftProbabilityByPairs, rightProbabilityByPairs;
+  private final double leftProbabilityBySingles, rightProbabilityBySingles;
+  private double leftProbabilityByPairs, rightProbabilityByPairs;
+
 
   public ProtonavProbabilities(double leftProbabilityBySingles, double rightProbabilityBySingles) {
     this.leftProbabilityBySingles = leftProbabilityBySingles;

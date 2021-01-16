@@ -1,6 +1,9 @@
 package com.broudy.control;
 
+import com.broudy.entity.AnalysisResults;
 import com.broudy.entity.ParsedSequence;
+import com.broudy.entity.AnalysisInformation;
+import com.broudy.entity.ReadyForParsing;
 import com.broudy.entity.SequenceToBeParsed;
 import java.io.File;
 import javafx.beans.property.ListProperty;
@@ -26,13 +29,20 @@ public class FilesManager {
   private final ListProperty<File> databaseDNAFiles;
   private final ListProperty<File> uploadedDNAFiles;
   private final ListProperty<File> selectedDNAFiles;
-  private final ListProperty<SequenceToBeParsed> matchedSequences;
-  private final ListProperty<ParsedSequence> parsedSequences;
+  private final ListProperty<ReadyForParsing> readyForParsing;
+  private final ListProperty<AnalysisInformation> analysisInformationList;
+  private final ListProperty<AnalysisResults> analysisResults;
+
+  private final ListProperty<SequenceToBeParsed> matchedSequences; //TODO remove
+  private final ListProperty<ParsedSequence> parsedSequences;//TODO remove
 
   private FilesManager() {
     databaseDNAFiles = new SimpleListProperty<>(FXCollections.observableArrayList());
     uploadedDNAFiles = new SimpleListProperty<>(FXCollections.observableArrayList());
     selectedDNAFiles = new SimpleListProperty<>(FXCollections.observableArrayList());
+    readyForParsing = new SimpleListProperty<>(FXCollections.observableArrayList());
+    analysisInformationList = new SimpleListProperty<>(FXCollections.observableArrayList());
+    analysisResults = new SimpleListProperty<>(FXCollections.observableArrayList());
     matchedSequences = new SimpleListProperty<>(FXCollections.observableArrayList());
     parsedSequences = new SimpleListProperty<>(FXCollections.observableArrayList());
   }
@@ -80,6 +90,42 @@ public class FilesManager {
     this.selectedDNAFiles.set(selectedDNAFiles);
   }
 
+  public ObservableList<ReadyForParsing> getReadyForParsing() {
+    return readyForParsing.get();
+  }
+
+  public ListProperty<ReadyForParsing> readyForParsingProperty() {
+    return readyForParsing;
+  }
+
+  public void setReadyForParsing(ObservableList<ReadyForParsing> readyForParsing) {
+    this.readyForParsing.set(readyForParsing);
+  }
+
+  public ObservableList<AnalysisInformation> getAnalysisInformationList() {
+    return analysisInformationList.get();
+  }
+
+  public ListProperty<AnalysisInformation> analysisInformationListProperty() {
+    return analysisInformationList;
+  }
+
+  public void setAnalysisInformationList(ObservableList<AnalysisInformation> analysisInformationList) {
+    this.analysisInformationList.set(analysisInformationList);
+  }
+
+  public ObservableList<AnalysisResults> getAnalysisResults() {
+    return analysisResults.get();
+  }
+
+  public ListProperty<AnalysisResults> analysisResultsProperty() {
+    return analysisResults;
+  }
+
+  public void setAnalysisResults(ObservableList<AnalysisResults> analysisResults) {
+    this.analysisResults.set(analysisResults);
+  }
+
   public ObservableList<SequenceToBeParsed> getMatchedSequences() {
     return matchedSequences.get();
   }
@@ -91,6 +137,7 @@ public class FilesManager {
   public void setMatchedSequences(ObservableList<SequenceToBeParsed> matchedSequences) {
     this.matchedSequences.set(matchedSequences);
   }
+
 
   public ObservableList<ParsedSequence> getParsedSequences() {
     return parsedSequences.get();

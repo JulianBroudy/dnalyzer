@@ -14,23 +14,25 @@ public class Protonav {
   private final Occurrences occurrences;
   private final ProtonavProbabilities probabilities;
   private final CorrelationArrays correlationArrays;
+  private ProtonavProbabilities resultingProbabilities;
   private Results results;
 
-  public Protonav(String pattern, ProtonavProbabilities probabilities) {
+  public Protonav(String pattern, ProtonavProbabilities probabilities,
+      CorrelationArrays correlationArrays) {
     this.pattern = pattern;
     this.probabilities = probabilities;
     this.occurrences = new Occurrences();
-    this.correlationArrays = null;
+    this.correlationArrays = correlationArrays;
     this.results = new Results();
   }
-
-  public Protonav(String pattern) {
-    this.pattern = pattern;
-    this.probabilities = null;
-    this.occurrences = new Occurrences();
-    this.correlationArrays = new CorrelationArrays();
-    this.results = new Results();
-  }
+  //
+  // public Protonav(String pattern) {
+  //   this.pattern = pattern;
+  //   this.probabilities = null;
+  //   this.occurrences = new Occurrences();
+  //   this.correlationArrays = new CorrelationArrays();
+  //   this.results = new Results();
+  // }
 
 
   /**
@@ -67,6 +69,24 @@ public class Protonav {
    */
   public CorrelationArrays getCorrelationArrays() {
     return correlationArrays;
+  }
+
+  /**
+   * Gets the resultingProbabilities.
+   *
+   * @return resultingProbabilities's value.
+   */
+  public ProtonavProbabilities getResultingProbabilities() {
+    return resultingProbabilities;
+  }
+
+  /**
+   * Sets the resultingProbabilities.
+   *
+   * @param resultingProbabilities is the resultingProbabilities's new value.
+   */
+  public void setResultingProbabilities(ProtonavProbabilities resultingProbabilities) {
+    this.resultingProbabilities = resultingProbabilities;
   }
 
   /**

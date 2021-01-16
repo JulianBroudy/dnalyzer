@@ -1,7 +1,5 @@
 package com.broudy.entity;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -16,8 +14,8 @@ public class ProtonavPair {
   private static long PAIRS_COUNT = 0;
 
   private final long ID;
-  private Protonav protonav;
-  private Protonav palimentary;
+  private Protonav extractedProtonav;
+  private Protonav palimentaryProtonav;
 
   public ProtonavPair() {
     this.ID = PAIRS_COUNT++;
@@ -32,14 +30,14 @@ public class ProtonavPair {
     PAIRS_COUNT = pairsCount;
   }
 
-  public ProtonavPair(Protonav protonav, Protonav palimentary) {
-    this.protonav = protonav;
-    this.palimentary = palimentary;
+  public ProtonavPair(Protonav extractedProtonav, Protonav palimentaryProtonav) {
+    this.extractedProtonav = extractedProtonav;
+    this.palimentaryProtonav = palimentaryProtonav;
     this.ID = PAIRS_COUNT++;
   }
-  public ProtonavPair(long ID, Protonav protonav, Protonav palimentary) {
-    this.protonav = protonav;
-    this.palimentary = palimentary;
+  public ProtonavPair(long ID, Protonav extractedProtonav, Protonav palimentaryProtonav) {
+    this.extractedProtonav = extractedProtonav;
+    this.palimentaryProtonav = palimentaryProtonav;
     this.ID = ID;
   }
 
@@ -57,8 +55,8 @@ public class ProtonavPair {
    *
    * @return protonav's value.
    */
-  public Protonav getProtonav() {
-    return protonav;
+  public Protonav getExtractedProtonav() {
+    return extractedProtonav;
   }
 
   /**
@@ -66,8 +64,8 @@ public class ProtonavPair {
    *
    * @return palimentary's value.
    */
-  public Protonav getPalimentary() {
-    return palimentary;
+  public Protonav getPalimentaryProtonav() {
+    return palimentaryProtonav;
   }
 
   @Override
@@ -79,11 +77,11 @@ public class ProtonavPair {
       return false;
     }
     ProtonavPair that = (ProtonavPair) o;
-    return protonav.equals(that.protonav);
+    return extractedProtonav.equals(that.extractedProtonav);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(protonav);
+    return Objects.hash(extractedProtonav);
   }
 }

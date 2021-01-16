@@ -14,7 +14,7 @@ public class Sequence {
 
   private final SequenceSide side;
   private final String sequence;
-  private final List<ProtonavPair> protonavs;
+  private final List<ProtonavPair> protonavs; //TODO remove
   private final ProbabilitiesPerSequence nucleotideProbabilities;
 
   public Sequence(SequenceSide side, String sequence) {

@@ -12,7 +12,6 @@ import java.io.File;
 public class SequenceToBeParsed {
 
   private final File dnaSequence;
-  private File targetFile;
   private int startIndex, endIndex;
   private boolean isCyclic;
   private final int minPatternLength, maxPatternLength;
@@ -41,15 +40,6 @@ public class SequenceToBeParsed {
    */
   public File getDnaSequence() {
     return dnaSequence;
-  }
-
-  /**
-   * Gets the targetFile.
-   *
-   * @return targetFile's value.
-   */
-  public File getTargetFile() {
-    return targetFile;
   }
 
   /**

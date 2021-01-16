@@ -41,6 +41,17 @@ public enum FXMLView {
     public String getTitle() {
       return "Analysis Progress";
     }
+  },
+  RESULTS_DOWNLOAD {
+    @Override
+    public String getPath() {
+      return "/com/broudy/FXMLs/ResultsDownloadVIEW.fxml";
+    }
+
+    @Override
+    public String getTitle() {
+      return "Results Download";
+    }
   };
 
 

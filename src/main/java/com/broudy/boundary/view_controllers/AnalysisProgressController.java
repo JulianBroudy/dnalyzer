@@ -1,17 +1,20 @@
 package com.broudy.boundary.view_controllers;
 
 import com.broudy.boundary.FXMLView;
-import com.broudy.control.Analyzer;
+import com.broudy.control.FileParser;
 import com.broudy.control.FilesManager;
-import com.broudy.control.SequenceParser;
+import com.broudy.control.NewAnalyzer;
 import com.broudy.control.StageManager;
+import com.broudy.entity.AnalysisInformation;
+import com.broudy.entity.AnalysisParameters;
+import com.broudy.entity.AnalysisResults;
 import com.broudy.entity.CorrelationArrays;
 import com.broudy.entity.ParsedSequence;
 import com.broudy.entity.Protonav;
 import com.broudy.entity.ProtonavPair;
+import com.broudy.entity.ReadyForParsing;
 import com.broudy.entity.Results;
 import com.broudy.entity.Sequence;
-import com.broudy.entity.SequenceToBeParsed;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -20,7 +23,12 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -54,7 +62,9 @@ public class AnalysisProgressController {
   private final FilesManager filesManager;
   private final BooleanProperty inProgress;
   private final StageManager stageManager;
-  private FileChooser fileChooser;
+
+  private final FileChooser fileChooser;
+  private final ExecutorService taskExecutor;
 
   @FXML
   private ProgressBar progressBar;
@@ -73,6 +83,7 @@ public class AnalysisProgressController {
     fileChooser = new FileChooser();
     fileChooser.getExtensionFilters()
         .addAll(new FileChooser.ExtensionFilter("Excel Files", "*.xlsx"));
+    this.taskExecutor = Executors.newFixedThreadPool(4);
   }
 
   @FXML
@@ -84,48 +95,86 @@ public class AnalysisProgressController {
         Bindings.createStringBinding(() -> inProgress.getValue() ? "Cancel" : "Start", inProgress));
 
     startBTN.setOnAction(click -> {
-      if (inProgress.getValue()) {
-        System.out.println("Cancelling...");
+      if (inProgress.get()) {
+        taskExecutor.shutdownNow();
+        inProgress.set(false);
+        stageManager.switchScene(FXMLView.TARGET_SITE_SELECTION);
       } else {
-        // Parse files
-        final List<ParsedSequence> parsedSequences = new ArrayList<>();
-        for (SequenceToBeParsed sequenceToBeParsed : filesManager.getMatchedSequences()) {
-          final SequenceParser parser = new SequenceParser(sequenceToBeParsed);
-          parser.setOnSucceeded(succeeded -> {
-            parsedSequences.add((ParsedSequence) succeeded.getSource().getValue());
-            final Analyzer analyzer = new Analyzer(
-                (ParsedSequence) succeeded.getSource().getValue());
-            analyzer.setOnSucceeded(done -> {
-              inProgress.set(false);
-              // saveFile((ParsedSequence) done.getSource().getValue());
-              saveFile3((ParsedSequence) done.getSource().getValue());
-              stageManager.switchScene(FXMLView.MAIN_SCREEN);
-            });
 
-            analyzer.messageProperty().addListener((observable, oldValue, newValue) -> {
-              logTA.appendText(newValue.concat("\n"));
-            });
+        inProgress.set(true);
+        progressBar.setProgress(ProgressBar.INDETERMINATE_PROGRESS);
+        updateLog("Parsing files...");
+        // Prepare a mapping from file to a list of analysis parameters
+        final List<ReadyForParsing> readyForParsingList = filesManager.getReadyForParsing();
+        final HashMap<File, List<AnalysisParameters>> filesToAnalysisParametersMapping = new HashMap<>();
+        List<AnalysisParameters> analysisParametersList;
+        for (ReadyForParsing readyForParsing : readyForParsingList) {
+          final File file = readyForParsing.getFile();
+          if (!filesToAnalysisParametersMapping.containsKey(file)) {
+            analysisParametersList = new ArrayList<>();
+            filesToAnalysisParametersMapping.put(file, analysisParametersList);
+          } else {
+            analysisParametersList = filesToAnalysisParametersMapping.get(file);
+          }
+          analysisParametersList.add(readyForParsing.getAnalysisParameters());
+        }
 
-            try {
-              Thread thread = new Thread(analyzer);
-              thread.setDaemon(true);
-              progressBar.progressProperty().unbind();
-              progressBar.progressProperty().bind(analyzer.progressProperty());
-              thread.start();
-            } catch (Exception e) {
-              System.out.println(e.getStackTrace());
+        final int numberOfParsers = filesToAnalysisParametersMapping.size();
+        final AtomicInteger numberOfFinishedThreads = new AtomicInteger();
+
+        for (Entry<File, List<AnalysisParameters>> readyForParsing : filesToAnalysisParametersMapping
+            .entrySet()) {
+          final FileParser fileParser = new FileParser(readyForParsing.getKey(),
+              readyForParsing.getValue());
+          fileParser.setOnSucceeded(finished -> {
+            filesManager.getAnalysisInformationList()
+                .addAll((List<AnalysisInformation>) finished.getSource().getValue());
+            numberOfFinishedThreads.getAndIncrement();
+            if (numberOfFinishedThreads.get() == numberOfParsers) {
+              activateAnalyzers();
             }
           });
-          Thread thread = new Thread(parser);
-          thread.setDaemon(true);
-          progressBar.progressProperty().bind(parser.progressProperty());
-          inProgress.set(true);
-          thread.start();
+          taskExecutor.execute(fileParser);
         }
-        // Analyze sequences
-        // Show results
       }
     });
+  }
+
+  private void updateLog(String s) {
+    logTA.appendText(s + "\n");
+  }
+
+  private void activateAnalyzers() {
+    updateLog("\nStarting analyzing files...");
+
+    // progressBar.setProgress(0);
+    final List<AnalysisInformation> analysisInformationList = filesManager
+        .getAnalysisInformationList();
+    final int numberOfAnalysisFiles = analysisInformationList.size();
+    final AtomicInteger numberOfFinishedThreads = new AtomicInteger();
+
+    // final ExecutorService taskExecutor = Executors.newFixedThreadPool(4);
+    for (AnalysisInformation analysisInformation : analysisInformationList) {
+
+      final NewAnalyzer analyzer = new NewAnalyzer(analysisInformation);
+      analyzer.setOnSucceeded(finished -> {
+        filesManager.getAnalysisResults().add((AnalysisResults) finished.getSource().getValue());
+        numberOfFinishedThreads.getAndIncrement();
+        if (numberOfFinishedThreads.get() == numberOfAnalysisFiles) {
+          taskExecutor.shutdown();
+          filesManager.getAnalysisInformationList().clear();
+          stageManager.switchScene(FXMLView.RESULTS_DOWNLOAD);
+        }
+      });
+      progressBar.progressProperty().bind(analyzer.progressProperty());
+      analyzer.messageProperty().addListener((observable, oldValue, newValue) -> {
+        updateLog(newValue);
+      });
+
+      taskExecutor.execute(analyzer);
+
+    }
+
   }
 
   private void saveFile3(ParsedSequence parsedSequence) {
@@ -157,7 +206,8 @@ public class AnalysisProgressController {
         correlations.sort(new Comparator<ProtonavPair>() {
           @Override
           public int compare(ProtonavPair o1, ProtonavPair o2) {
-            return o1.getProtonav().getPattern().compareToIgnoreCase(o2.getProtonav().getPattern());
+            return o1.getExtractedProtonav().getPattern()
+                .compareToIgnoreCase(o2.getExtractedProtonav().getPattern());
           }
         });
 
@@ -213,12 +263,12 @@ public class AnalysisProgressController {
       cell.setCellValue("---");
 
       cell = row.createCell(2);
-      cell.setCellValue(pair.getProtonav().getPattern());
+      cell.setCellValue(pair.getExtractedProtonav().getPattern());
       cell = row.createCell(3);
-      cell.setCellValue(pair.getPalimentary().getPattern());
+      cell.setCellValue(pair.getPalimentaryProtonav().getPattern());
 
-      protonavCorrelations = pair.getProtonav().getCorrelationArrays();
-      palimentaryCorrelations = pair.getPalimentary().getCorrelationArrays();
+      protonavCorrelations = pair.getExtractedProtonav().getCorrelationArrays();
+      palimentaryCorrelations = pair.getPalimentaryProtonav().getCorrelationArrays();
       // protonavLeftCorrelations = protonavCorrelations.getCorrelationsOnLeft();
       // protonavRightCorrelations = protonavCorrelations.getCorrelationsOnRight();
       // palimentaryLeftCorrelations = palimentaryCorrelations.getCorrelationsOnLeft();
@@ -315,7 +365,8 @@ public class AnalysisProgressController {
     correlations.sort(new Comparator<ProtonavPair>() {
       @Override
       public int compare(ProtonavPair o1, ProtonavPair o2) {
-        return o1.getProtonav().getPattern().compareToIgnoreCase(o2.getProtonav().getPattern());
+        return o1.getExtractedProtonav().getPattern()
+            .compareToIgnoreCase(o2.getExtractedProtonav().getPattern());
       }
     });
 
@@ -359,7 +410,8 @@ public class AnalysisProgressController {
     protonavPairs.sort(new Comparator<ProtonavPair>() {
       @Override
       public int compare(ProtonavPair o1, ProtonavPair o2) {
-        return o1.getProtonav().getPattern().compareToIgnoreCase(o2.getProtonav().getPattern());
+        return o1.getExtractedProtonav().getPattern()
+            .compareToIgnoreCase(o2.getExtractedProtonav().getPattern());
       }
     });
 
@@ -386,12 +438,12 @@ public class AnalysisProgressController {
       cell.setCellValue(currentSide);
 
       cell = row.createCell(2);
-      cell.setCellValue(pair.getProtonav().getPattern());
+      cell.setCellValue(pair.getExtractedProtonav().getPattern());
       cell = row.createCell(3);
-      cell.setCellValue(pair.getPalimentary().getPattern());
+      cell.setCellValue(pair.getPalimentaryProtonav().getPattern());
 
-      protonavCorrelations = pair.getProtonav().getCorrelationArrays();
-      palimentaryCorrelations = pair.getPalimentary().getCorrelationArrays();
+      protonavCorrelations = pair.getExtractedProtonav().getCorrelationArrays();
+      palimentaryCorrelations = pair.getPalimentaryProtonav().getCorrelationArrays();
       // protonavLeftCorrelations = protonavCorrelations.getCorrelationsOnLeft();
       // protonavRightCorrelations = protonavCorrelations.getCorrelationsOnRight();
       // palimentaryLeftCorrelations = palimentaryCorrelations.getCorrelationsOnLeft();
@@ -499,7 +551,7 @@ public class AnalysisProgressController {
       cell.setCellValue(currentSide);
       cell = row.createCell(2);
       cell.setCellValue("Protonav");
-      writeRow(pair.getProtonav(), row);
+      writeRow(pair.getExtractedProtonav(), row);
 
       row = sheet.createRow(rowCount++);
       cell = row.createCell(0);
@@ -508,7 +560,7 @@ public class AnalysisProgressController {
       cell.setCellValue(currentSide);
       cell = row.createCell(2);
       cell.setCellValue("Palimentary");
-      writeRow(pair.getPalimentary(), row);
+      writeRow(pair.getPalimentaryProtonav(), row);
     }
 
     return rowCount;

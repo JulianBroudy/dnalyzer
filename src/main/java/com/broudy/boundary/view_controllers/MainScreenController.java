@@ -4,7 +4,9 @@ import com.broudy.boundary.FXMLView;
 import com.broudy.boundary.RenderingsStyler;
 import com.broudy.control.FilesManager;
 import com.broudy.control.StageManager;
+import com.broudy.entity.AnalysisParameters;
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
 import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
@@ -23,6 +25,7 @@ public class MainScreenController {
   private final FileChooser fileChooser;
   private final StageManager stageManager;
   private final FilesManager filesManager;
+
 
   @FXML
   private HBox contentHB;
