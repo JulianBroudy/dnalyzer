@@ -1,5 +1,6 @@
 package com.broudy.boundary;
 
+import com.broudy.entity.AnalysisResults;
 import com.broudy.entity.ReadyForParsing;
 import com.broudy.entity.SequenceToBeParsed;
 import java.io.File;
@@ -28,7 +29,8 @@ public class RenderingsStyler {
   }
 
 
-  public static ListCell<SequenceToBeParsed> callMatchedLV(ListView<SequenceToBeParsed> fileListView) {
+  public static ListCell<SequenceToBeParsed> callMatchedLV(
+      ListView<SequenceToBeParsed> fileListView) {
     return new ListCell<>() {
       @Override
       protected void updateItem(SequenceToBeParsed item, boolean empty) {
@@ -39,7 +41,8 @@ public class RenderingsStyler {
   }
 
 
-  public static ListCell<ReadyForParsing> callReadyForParsingLV(ListView<ReadyForParsing> fileListView) {
+  public static ListCell<ReadyForParsing> callReadyForParsingLV(
+      ListView<ReadyForParsing> fileListView) {
     return new ListCell<>() {
       @Override
       protected void updateItem(ReadyForParsing item, boolean empty) {
@@ -49,6 +52,17 @@ public class RenderingsStyler {
     };
   }
 
+  public static ListCell<AnalysisResults> callAnalysisResultsLV(
+      ListView<AnalysisResults> analysisResultsListView) {
+    return new ListCell<>() {
+      @Override
+      protected void updateItem(AnalysisResults item, boolean empty) {
+        super.updateItem(item, empty);
+        setText(empty ? "" : item.getAnalysisInformation().getMetadata().getFileName().concat(" - ")
+            .concat(item.getAnalysisInformation().getMetadata().getTargetSite()));
+      }
+    };
+  }
 
   public static void allowNumericalOnly(TextField textField) {
     textField.textProperty().addListener((observable, oldValue, newValue) -> {
@@ -57,4 +71,5 @@ public class RenderingsStyler {
       }
     });
   }
+
 }

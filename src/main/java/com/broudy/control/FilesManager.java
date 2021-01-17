@@ -150,4 +150,10 @@ public class FilesManager {
   public void setParsedSequences(ObservableList<ParsedSequence> parsedSequences) {
     this.parsedSequences.set(parsedSequences);
   }
+
+  public void clearFiles() {
+    analysisResults.clear();
+    analysisInformationList.clear();
+    readyForParsing.clear();
+  }
 }

@@ -44,7 +44,9 @@ public class TargetSitesSelectionController {
   private TextField maxPatternLenTF;
 
   @FXML
-  private TextField windowTF;
+  private ComboBox<Integer> windowSizeCB;
+  // @FXML
+  // private TextField windowTF;
 
   @FXML
   private TextField paddingTF;
@@ -71,8 +73,12 @@ public class TargetSitesSelectionController {
 
     selectedCB.setCellFactory(RenderingsStyler::callUploadedLV);
     readyForParsingLV.setCellFactory(RenderingsStyler::callReadyForParsingLV);
+
     RenderingsStyler.allowNumericalOnly(startIndexTF);
     RenderingsStyler.allowNumericalOnly(endIndexTF);
+    RenderingsStyler.allowNumericalOnly(paddingTF);
+    windowSizeCB.getItems().addAll(100, 500);
+    windowSizeCB.getSelectionModel().select(Integer.valueOf(500));
 
     initializeBindings();
     initializeEventHandlers();
@@ -117,9 +123,10 @@ public class TargetSitesSelectionController {
       final File selectedFile = selectedCB.getValue();
       final AnalysisParameters analysisParameters = new AnalysisParameters(yesCyclicCB.isSelected(),
           Integer.parseInt(startIndexTF.getText()), Integer.parseInt(endIndexTF.getText()),
-          minPatternLenTF.getText().isEmpty() ? 3 : Integer.parseInt(minPatternLenTF.getText()),
-          maxPatternLenTF.getText().isEmpty() ? 7 : Integer.parseInt(maxPatternLenTF.getText()),
-          windowTF.getText().isEmpty() ? 500 : Integer.parseInt(windowTF.getText()),
+          minPatternLenTF.getText().isEmpty() ? 1 : Integer.parseInt(minPatternLenTF.getText()),
+          maxPatternLenTF.getText().isEmpty() ? 3 : Integer.parseInt(maxPatternLenTF.getText()),
+          windowSizeCB.getValue(),
+          // windowTF.getText().isEmpty() ? 500 : Integer.parseInt(windowTF.getText()),
           paddingTF.getText().isEmpty() ? 100000 : Integer.parseInt(paddingTF.getText()));
       final ReadyForParsing readyForParsing = new ReadyForParsing(selectedFile, analysisParameters);
       filesManager.getReadyForParsing().add(readyForParsing);

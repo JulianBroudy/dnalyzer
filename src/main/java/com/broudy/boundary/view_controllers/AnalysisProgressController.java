@@ -98,6 +98,7 @@ public class AnalysisProgressController {
       if (inProgress.get()) {
         taskExecutor.shutdownNow();
         inProgress.set(false);
+        filesManager.clearFiles();
         stageManager.switchScene(FXMLView.TARGET_SITE_SELECTION);
       } else {
 

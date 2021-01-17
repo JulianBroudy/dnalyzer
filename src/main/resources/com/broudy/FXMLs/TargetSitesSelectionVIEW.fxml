@@ -105,7 +105,7 @@
                               <HBox alignment="CENTER_LEFT" maxWidth="-Infinity" HBox.hgrow="ALWAYS">
                                  <children>
                                     <Label styleClass="text-16" text="Min:" HBox.hgrow="NEVER" />
-                                    <TextField fx:id="minPatternLenTF" alignment="CENTER" maxWidth="50.0" prefColumnCount="5" promptText="3" HBox.hgrow="ALWAYS">
+                                    <TextField fx:id="minPatternLenTF" alignment="CENTER" maxWidth="50.0" prefColumnCount="5" promptText="1" HBox.hgrow="ALWAYS">
                                        <HBox.margin>
                                           <Insets left="2.0" />
                                        </HBox.margin>
@@ -116,7 +116,7 @@
                               <HBox alignment="CENTER_LEFT" maxWidth="-Infinity" HBox.hgrow="ALWAYS">
                                  <children>
                                     <Label styleClass="text-16" text="Max:" HBox.hgrow="NEVER" />
-                                    <TextField fx:id="maxPatternLenTF" alignment="CENTER" maxWidth="50.0" prefColumnCount="5" promptText="7" HBox.hgrow="ALWAYS">
+                                    <TextField fx:id="maxPatternLenTF" alignment="CENTER" maxWidth="50.0" prefColumnCount="5" promptText="3" HBox.hgrow="ALWAYS">
                                        <HBox.margin>
                                           <Insets left="2.0" />
                                        </HBox.margin>
@@ -127,11 +127,11 @@
                               <HBox alignment="CENTER_LEFT" layoutX="287.0" layoutY="10.0" maxWidth="-Infinity">
                                  <children>
                                     <Label styleClass="text-16" text="Window:" HBox.hgrow="NEVER" />
-                                    <TextField fx:id="windowTF" alignment="CENTER" prefColumnCount="2" promptText="500" HBox.hgrow="ALWAYS">
+                                    <ComboBox fx:id="windowSizeCB" maxWidth="78.0" promptText="500" styleClass="text-14" visibleRowCount="3" HBox.hgrow="ALWAYS">
                                        <HBox.margin>
                                           <Insets left="2.0" />
                                        </HBox.margin>
-                                    </TextField>
+                                    </ComboBox>
                                  </children>
                               </HBox>
                               <Region layoutX="94.0" layoutY="10.0" HBox.hgrow="ALWAYS" />
