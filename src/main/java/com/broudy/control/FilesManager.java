@@ -1,10 +1,8 @@
 package com.broudy.control;
 
 import com.broudy.entity.AnalysisResults;
-import com.broudy.entity.ParsedSequence;
 import com.broudy.entity.AnalysisInformation;
 import com.broudy.entity.ReadyForParsing;
-import com.broudy.entity.SequenceToBeParsed;
 import java.io.File;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.SimpleListProperty;
@@ -33,9 +31,6 @@ public class FilesManager {
   private final ListProperty<AnalysisInformation> analysisInformationList;
   private final ListProperty<AnalysisResults> analysisResults;
 
-  private final ListProperty<SequenceToBeParsed> matchedSequences; //TODO remove
-  private final ListProperty<ParsedSequence> parsedSequences;//TODO remove
-
   private FilesManager() {
     databaseDNAFiles = new SimpleListProperty<>(FXCollections.observableArrayList());
     uploadedDNAFiles = new SimpleListProperty<>(FXCollections.observableArrayList());
@@ -43,8 +38,6 @@ public class FilesManager {
     readyForParsing = new SimpleListProperty<>(FXCollections.observableArrayList());
     analysisInformationList = new SimpleListProperty<>(FXCollections.observableArrayList());
     analysisResults = new SimpleListProperty<>(FXCollections.observableArrayList());
-    matchedSequences = new SimpleListProperty<>(FXCollections.observableArrayList());
-    parsedSequences = new SimpleListProperty<>(FXCollections.observableArrayList());
   }
 
   public static FilesManager getFilesManager() {
@@ -124,31 +117,6 @@ public class FilesManager {
 
   public void setAnalysisResults(ObservableList<AnalysisResults> analysisResults) {
     this.analysisResults.set(analysisResults);
-  }
-
-  public ObservableList<SequenceToBeParsed> getMatchedSequences() {
-    return matchedSequences.get();
-  }
-
-  public ListProperty<SequenceToBeParsed> matchedSequencesProperty() {
-    return matchedSequences;
-  }
-
-  public void setMatchedSequences(ObservableList<SequenceToBeParsed> matchedSequences) {
-    this.matchedSequences.set(matchedSequences);
-  }
-
-
-  public ObservableList<ParsedSequence> getParsedSequences() {
-    return parsedSequences.get();
-  }
-
-  public ListProperty<ParsedSequence> parsedSequencesProperty() {
-    return parsedSequences;
-  }
-
-  public void setParsedSequences(ObservableList<ParsedSequence> parsedSequences) {
-    this.parsedSequences.set(parsedSequences);
   }
 
   public void clearFiles() {

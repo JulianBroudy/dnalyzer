@@ -15,7 +15,6 @@ public class Protonav {
   private final ProtonavProbabilities probabilities;
   private final AutocorrelationArrays autocorrelationArrays;
   private ProtonavProbabilities resultingProbabilities;
-  private Results results;
 
   public Protonav(String pattern, ProtonavProbabilities probabilities,
       AutocorrelationArrays autocorrelationArrays) {
@@ -23,17 +22,7 @@ public class Protonav {
     this.probabilities = probabilities;
     this.occurrences = new Occurrences();
     this.autocorrelationArrays = autocorrelationArrays;
-    this.results = new Results();
   }
-  //
-  // public Protonav(String pattern) {
-  //   this.pattern = pattern;
-  //   this.probabilities = null;
-  //   this.occurrences = new Occurrences();
-  //   this.correlationArrays = new CorrelationArrays();
-  //   this.results = new Results();
-  // }
-
 
   /**
    * Gets the pattern.
@@ -89,21 +78,4 @@ public class Protonav {
     this.resultingProbabilities = resultingProbabilities;
   }
 
-  /**
-   * Gets the results.
-   *
-   * @return results's value.
-   */
-  public Results getResults() {
-    return results;
-  }
-
-  /**
-   * Sets the results.
-   *
-   * @param results is the results's new value.
-   */
-  public void setResults(Results results) {
-    this.results = results;
-  }
 }

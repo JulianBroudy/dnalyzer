@@ -2,7 +2,6 @@ package com.broudy.boundary;
 
 import com.broudy.entity.AnalysisResults;
 import com.broudy.entity.ReadyForParsing;
-import com.broudy.entity.SequenceToBeParsed;
 import java.io.File;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
@@ -27,19 +26,6 @@ public class RenderingsStyler {
       }
     };
   }
-
-
-  public static ListCell<SequenceToBeParsed> callMatchedLV(
-      ListView<SequenceToBeParsed> fileListView) {
-    return new ListCell<>() {
-      @Override
-      protected void updateItem(SequenceToBeParsed item, boolean empty) {
-        super.updateItem(item, empty);
-        setText(empty ? "" : item.getDnaSequence().getName());
-      }
-    };
-  }
-
 
   public static ListCell<ReadyForParsing> callReadyForParsingLV(
       ListView<ReadyForParsing> fileListView) {
