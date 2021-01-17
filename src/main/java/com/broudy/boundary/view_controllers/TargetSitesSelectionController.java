@@ -76,6 +76,8 @@ public class TargetSitesSelectionController {
 
     RenderingsStyler.allowNumericalOnly(startIndexTF);
     RenderingsStyler.allowNumericalOnly(endIndexTF);
+    RenderingsStyler.allowNumericalOnly(minPatternLenTF);
+    RenderingsStyler.allowNumericalOnly(maxPatternLenTF);
     RenderingsStyler.allowNumericalOnly(paddingTF);
     windowSizeCB.getItems().addAll(100, 500);
     windowSizeCB.getSelectionModel().select(Integer.valueOf(500));
