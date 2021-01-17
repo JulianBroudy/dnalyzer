@@ -8,7 +8,7 @@ import com.broudy.control.StageManager;
 import com.broudy.entity.AnalysisInformation;
 import com.broudy.entity.AnalysisParameters;
 import com.broudy.entity.AnalysisResults;
-import com.broudy.entity.CorrelationArrays;
+import com.broudy.entity.AutocorrelationArrays;
 import com.broudy.entity.ParsedSequence;
 import com.broudy.entity.Protonav;
 import com.broudy.entity.ProtonavPair;
@@ -246,7 +246,7 @@ public class AnalysisProgressController {
 
     long ID;
 
-    CorrelationArrays protonavCorrelations, palimentaryCorrelations;
+    AutocorrelationArrays protonavCorrelations, palimentaryCorrelations;
     // int[] protonavLeftCorrelations, protonavRightCorrelations;
     // int[] palimentaryLeftCorrelations, palimentaryRightCorrelations;
     double[] protonavLeftCorrelations, protonavRightCorrelations;
@@ -268,8 +268,8 @@ public class AnalysisProgressController {
       cell = row.createCell(3);
       cell.setCellValue(pair.getPalimentaryProtonav().getPattern());
 
-      protonavCorrelations = pair.getExtractedProtonav().getCorrelationArrays();
-      palimentaryCorrelations = pair.getPalimentaryProtonav().getCorrelationArrays();
+      protonavCorrelations = pair.getExtractedProtonav().getAutocorrelationArrays();
+      palimentaryCorrelations = pair.getPalimentaryProtonav().getAutocorrelationArrays();
       // protonavLeftCorrelations = protonavCorrelations.getCorrelationsOnLeft();
       // protonavRightCorrelations = protonavCorrelations.getCorrelationsOnRight();
       // palimentaryLeftCorrelations = palimentaryCorrelations.getCorrelationsOnLeft();
@@ -421,7 +421,7 @@ public class AnalysisProgressController {
 
     long ID;
 
-    CorrelationArrays protonavCorrelations, palimentaryCorrelations;
+    AutocorrelationArrays protonavCorrelations, palimentaryCorrelations;
     // int[] protonavLeftCorrelations, protonavRightCorrelations;
     // int[] palimentaryLeftCorrelations, palimentaryRightCorrelations;
     double[] protonavLeftCorrelations, protonavRightCorrelations;
@@ -443,8 +443,8 @@ public class AnalysisProgressController {
       cell = row.createCell(3);
       cell.setCellValue(pair.getPalimentaryProtonav().getPattern());
 
-      protonavCorrelations = pair.getExtractedProtonav().getCorrelationArrays();
-      palimentaryCorrelations = pair.getPalimentaryProtonav().getCorrelationArrays();
+      protonavCorrelations = pair.getExtractedProtonav().getAutocorrelationArrays();
+      palimentaryCorrelations = pair.getPalimentaryProtonav().getAutocorrelationArrays();
       // protonavLeftCorrelations = protonavCorrelations.getCorrelationsOnLeft();
       // protonavRightCorrelations = protonavCorrelations.getCorrelationsOnRight();
       // palimentaryLeftCorrelations = palimentaryCorrelations.getCorrelationsOnLeft();

@@ -1,6 +1,6 @@
 package com.broudy.control;
 
-import com.broudy.entity.CorrelationArrays;
+import com.broudy.entity.AutocorrelationArrays;
 
 /**
  * A Command DP.
@@ -11,21 +11,21 @@ import com.broudy.entity.CorrelationArrays;
  */
 public interface CorrelationArrayGetter {
 
-   int[] getCorrelationArray(CorrelationArrays correlationArrays);
+   int[] getCorrelationArray(AutocorrelationArrays autocorrelationArrays);
 
   class LeftCorrelationArraysGetter implements CorrelationArrayGetter{
 
     @Override
-    public int[] getCorrelationArray(CorrelationArrays correlationArrays) {
-      return correlationArrays.getCorrelationsOnLeft();
+    public int[] getCorrelationArray(AutocorrelationArrays autocorrelationArrays) {
+      return autocorrelationArrays.getCorrelationsOnLeft();
     }
   }
 
   class RightCorrelationArraysGetter implements CorrelationArrayGetter{
 
     @Override
-    public int[] getCorrelationArray(CorrelationArrays correlationArrays) {
-      return correlationArrays.getCorrelationsOnRight();
+    public int[] getCorrelationArray(AutocorrelationArrays autocorrelationArrays) {
+      return autocorrelationArrays.getCorrelationsOnRight();
     }
   }
 

@@ -7,14 +7,14 @@ package com.broudy.entity;
  *
  * @author <a href="https://github.com/JulianBroudy"><b>Julian Broudy</b></a>
  */
-public class CorrelationArrays {
+public class AutocorrelationArrays {
 
   private final int[] correlationsOnLeft;
   private final int[] correlationsOnRight;
   private final double[] smoothedCorrelationsOnLeft;
   private final double[] smoothedCorrelationsOnRight;
 
-  public CorrelationArrays(int windowSize) {
+  public AutocorrelationArrays(int windowSize) {
     this.correlationsOnLeft = new int[windowSize];
     this.correlationsOnRight= new int[windowSize];
     this.smoothedCorrelationsOnLeft = new double[windowSize-1];

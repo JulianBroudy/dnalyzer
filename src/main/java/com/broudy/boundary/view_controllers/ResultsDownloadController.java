@@ -7,7 +7,7 @@ import com.broudy.control.StageManager;
 import com.broudy.entity.AnalysisInformation;
 import com.broudy.entity.AnalysisParameters;
 import com.broudy.entity.AnalysisResults;
-import com.broudy.entity.CorrelationArrays;
+import com.broudy.entity.AutocorrelationArrays;
 import com.broudy.entity.FileMetadata;
 import com.broudy.entity.Protonav;
 import com.broudy.entity.ProtonavPair;
@@ -191,7 +191,7 @@ public class ResultsDownloadController {
 
     long ID;
 
-    CorrelationArrays protonavCorrelations, palimentaryCorrelations;
+    AutocorrelationArrays protonavCorrelations, palimentaryCorrelations;
     double[] protonavLeftCorrelations, protonavRightCorrelations;
     double[] palimentaryLeftCorrelations, palimentaryRightCorrelations;
 
@@ -211,8 +211,8 @@ public class ResultsDownloadController {
       cell = row.createCell(3);
       cell.setCellValue(pair.getPalimentaryProtonav().getPattern());
 
-      protonavCorrelations = pair.getExtractedProtonav().getCorrelationArrays();
-      palimentaryCorrelations = pair.getPalimentaryProtonav().getCorrelationArrays();
+      protonavCorrelations = pair.getExtractedProtonav().getAutocorrelationArrays();
+      palimentaryCorrelations = pair.getPalimentaryProtonav().getAutocorrelationArrays();
       protonavLeftCorrelations = protonavCorrelations.getSmoothedCorrelationsOnLeft();
       protonavRightCorrelations = protonavCorrelations.getSmoothedCorrelationsOnRight();
       palimentaryLeftCorrelations = palimentaryCorrelations.getSmoothedCorrelationsOnLeft();

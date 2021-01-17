@@ -7,7 +7,7 @@ import com.broudy.control.OccurrencesAdder.RightOccurrencesAdder;
 import com.broudy.entity.AnalysisInformation;
 import com.broudy.entity.AnalysisParameters;
 import com.broudy.entity.AnalysisResults;
-import com.broudy.entity.CorrelationArrays;
+import com.broudy.entity.AutocorrelationArrays;
 import com.broudy.entity.Occurrences;
 import com.broudy.entity.Protonav;
 import com.broudy.entity.ProtonavPair;
@@ -32,7 +32,7 @@ public class NewAnalyzer extends Task<AnalysisResults> {
   private final List<String> possiblePatterns;
   private final List<ProtonavPair> protonavPairs;
   private final HashMap<String, Protonav> patternToProtonavMapping;
-  private final HashMap<String, CorrelationArrays> patternToCorrelationArraysMapping;
+  private final HashMap<String, AutocorrelationArrays> patternToCorrelationArraysMapping;
   private final HashMap<String, Occurrences> patternToOccurrencesMapping;
 
   private long progress, totalProgress;
@@ -184,11 +184,11 @@ public class NewAnalyzer extends Task<AnalysisResults> {
     int[] leftCorrelationArray, rightCorrelationArray;
     double[] leftSmoothedCorrelationArray, rightSmoothedCorrelationArray;
     final int len = windowSize - 1;
-    for (CorrelationArrays correlationArrays : patternToCorrelationArraysMapping.values()) {
-      leftCorrelationArray = correlationArrays.getCorrelationsOnLeft();
-      rightCorrelationArray = correlationArrays.getCorrelationsOnRight();
-      leftSmoothedCorrelationArray = correlationArrays.getSmoothedCorrelationsOnLeft();
-      rightSmoothedCorrelationArray = correlationArrays.getSmoothedCorrelationsOnRight();
+    for (AutocorrelationArrays autocorrelationArrays : patternToCorrelationArraysMapping.values()) {
+      leftCorrelationArray = autocorrelationArrays.getCorrelationsOnLeft();
+      rightCorrelationArray = autocorrelationArrays.getCorrelationsOnRight();
+      leftSmoothedCorrelationArray = autocorrelationArrays.getSmoothedCorrelationsOnLeft();
+      rightSmoothedCorrelationArray = autocorrelationArrays.getSmoothedCorrelationsOnRight();
       for (int index = 2; index < len; index++) {
         leftSmoothedCorrelationArray[index - 1] =
             (double) (leftCorrelationArray[index - 1] + leftCorrelationArray[index]
@@ -299,21 +299,22 @@ public class NewAnalyzer extends Task<AnalysisResults> {
       setProbabilitiesByPairs(palimentaryPattern, palimentaryProbabilities);
     }
 
-    final CorrelationArrays extractedProtonavCorrelationArrays = new CorrelationArrays(windowSize);
-    final CorrelationArrays palimentaryProtonavCorrelationArrays = new CorrelationArrays(
+    final AutocorrelationArrays extractedProtonavAutocorrelationArrays = new AutocorrelationArrays(windowSize);
+    final AutocorrelationArrays palimentaryProtonavAutocorrelationArrays = new AutocorrelationArrays(
         windowSize);
 
     final Protonav extractedProtonav = new Protonav(extractedPattern,
-        extractedProtonavProbabilities, extractedProtonavCorrelationArrays);
+        extractedProtonavProbabilities, extractedProtonavAutocorrelationArrays);
     final Protonav palimentaryProtonav = new Protonav(palimentaryPattern, palimentaryProbabilities,
-        palimentaryProtonavCorrelationArrays);
+        palimentaryProtonavAutocorrelationArrays);
 
     patternToProtonavMapping.put(extractedPattern, extractedProtonav);
     patternToProtonavMapping.put(palimentaryPattern, palimentaryProtonav);
     patternToOccurrencesMapping.put(extractedPattern, extractedProtonav.getOccurrences());
     patternToOccurrencesMapping.put(palimentaryPattern, palimentaryProtonav.getOccurrences());
-    patternToCorrelationArraysMapping.put(extractedPattern, extractedProtonavCorrelationArrays);
-    patternToCorrelationArraysMapping.put(palimentaryPattern, palimentaryProtonavCorrelationArrays);
+    patternToCorrelationArraysMapping.put(extractedPattern, extractedProtonavAutocorrelationArrays);
+    patternToCorrelationArraysMapping.put(palimentaryPattern,
+        palimentaryProtonavAutocorrelationArrays);
 
     return new ProtonavPair(ID, extractedProtonav, palimentaryProtonav);
   }
