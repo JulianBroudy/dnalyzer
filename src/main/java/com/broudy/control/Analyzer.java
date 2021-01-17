@@ -25,7 +25,7 @@ import javafx.concurrent.Task;
  *
  * @author <a href="https://github.com/JulianBroudy"><b>Julian Broudy</b></a>
  */
-public class NewAnalyzer extends Task<AnalysisResults> {
+public class Analyzer extends Task<AnalysisResults> {
 
   private final AnalysisInformation analysisInformation;
   private final AnalysisParameters analysisParameters;
@@ -46,7 +46,7 @@ public class NewAnalyzer extends Task<AnalysisResults> {
   private double totalNumberOfNucleotidesOnRight;
 
 
-  public NewAnalyzer(AnalysisInformation analysisInformation) {
+  public Analyzer(AnalysisInformation analysisInformation) {
     this.analysisInformation = analysisInformation;
     this.analysisParameters = analysisInformation.getAnalysisParameters();
     this.possiblePatterns = new ArrayList<>();
@@ -74,12 +74,12 @@ public class NewAnalyzer extends Task<AnalysisResults> {
     String sequenceUnderTest = sequenceString.substring(from);
 
     updateMessage("Computing correlations...");
-    computeOccurrencesAndCorrelations(sequenceUnderTest, new LeftCorrelationArraysGetter());
+    computeAutocorrelations(sequenceUnderTest, new LeftCorrelationArraysGetter());
 
     sequenceString = analysisInformation.getRightSequence().getSequence();
     sequenceUnderTest = sequenceString.substring(0, padding + windowSize);
 
-    computeOccurrencesAndCorrelations(sequenceUnderTest, new RightCorrelationArraysGetter());
+    computeAutocorrelations(sequenceUnderTest, new RightCorrelationArraysGetter());
 
     updateMessage("Calculating smoothed correlations...");
     smoothCorrelationArrays(windowSize);
@@ -200,7 +200,7 @@ public class NewAnalyzer extends Task<AnalysisResults> {
     }
   }
 
-  private void computeOccurrencesAndCorrelations(String sequenceUnderTest,
+  private void computeAutocorrelations(String sequenceUnderTest,
       CorrelationArrayGetter correlationsGetter) {
 
     final int windowSize = analysisParameters.getWindowSize();

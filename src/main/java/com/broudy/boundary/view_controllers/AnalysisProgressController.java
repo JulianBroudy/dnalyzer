@@ -3,7 +3,7 @@ package com.broudy.boundary.view_controllers;
 import com.broudy.boundary.FXMLView;
 import com.broudy.control.FileParser;
 import com.broudy.control.FilesManager;
-import com.broudy.control.NewAnalyzer;
+import com.broudy.control.Analyzer;
 import com.broudy.control.StageManager;
 import com.broudy.entity.AnalysisInformation;
 import com.broudy.entity.AnalysisParameters;
@@ -132,7 +132,7 @@ public class AnalysisProgressController {
 
     for (AnalysisInformation analysisInformation : analysisInformationList) {
 
-      final NewAnalyzer analyzer = new NewAnalyzer(analysisInformation);
+      final Analyzer analyzer = new Analyzer(analysisInformation);
       analyzer.setOnSucceeded(finished -> {
         filesManager.getAnalysisResults().add((AnalysisResults) finished.getSource().getValue());
         numberOfFinishedThreads.getAndIncrement();
