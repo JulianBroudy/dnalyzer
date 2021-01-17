@@ -2,8 +2,8 @@ package com.broudy.control;
 
 import com.broudy.control.CorrelationArrayGetter.LeftCorrelationArraysGetter;
 import com.broudy.control.CorrelationArrayGetter.RightCorrelationArraysGetter;
-import com.broudy.control.OccurrencesAdder.LeftCountAdder;
-import com.broudy.control.OccurrencesAdder.RightCountAdder;
+import com.broudy.control.OccurrencesAdder.LeftOccurrencesAdder;
+import com.broudy.control.OccurrencesAdder.RightOccurrencesAdder;
 import com.broudy.entity.AnalysisInformation;
 import com.broudy.entity.AnalysisParameters;
 import com.broudy.entity.AnalysisResults;
@@ -65,28 +65,46 @@ public class NewAnalyzer extends Task<AnalysisResults> {
     final int windowSize = analysisParameters.getWindowSize();
     final int padding = analysisParameters.getPadding();
 
-    totalProgress = padding * 2;
+    totalProgress = padding * 2 + analysisInformation.getLeftSequence().getSequence().length()
+        + analysisInformation.getRightSequence().getSequence().length();
     updateProgress(progress++, totalProgress);
 
     String sequenceString = analysisInformation.getLeftSequence().getSequence();
     int from = sequenceString.length() - padding - windowSize;
     String sequenceUnderTest = sequenceString.substring(from);
 
-    updateMessage("Counting occurrences and computing correlations...");
-    computeOccurrencesAndCorrelations(sequenceUnderTest, new LeftCountAdder(),
-        new LeftCorrelationArraysGetter());
+    updateMessage("Computing correlations...");
+    computeOccurrencesAndCorrelations(sequenceUnderTest, new LeftCorrelationArraysGetter());
 
     sequenceString = analysisInformation.getRightSequence().getSequence();
     sequenceUnderTest = sequenceString.substring(0, padding + windowSize);
 
-    computeOccurrencesAndCorrelations(sequenceUnderTest, new RightCountAdder(),
-        new RightCorrelationArraysGetter());
+    computeOccurrencesAndCorrelations(sequenceUnderTest, new RightCorrelationArraysGetter());
 
     updateMessage("Calculating smoothed correlations...");
     smoothCorrelationArrays(windowSize);
 
-    return new AnalysisResults(analysisInformation, protonavPairs, getFilteredProtonavPairList());
+    updateMessage("Counting occurrences...");
+    countOccurrences(analysisInformation.getLeftSequence().getSequence(),
+        new LeftOccurrencesAdder());
+    countOccurrences(analysisInformation.getRightSequence().getSequence(),
+        new RightOccurrencesAdder());
 
+    return new AnalysisResults(analysisInformation, protonavPairs, getFilteredProtonavPairList());
+  }
+
+  private void countOccurrences(String sequence, OccurrencesAdder occurrencesAdder) {
+
+    final int min = analysisParameters.getMinPatternLength();
+    final int max = analysisParameters.getMaxPatternLength();
+    final int length = sequence.length() - max;
+    for (int i = 0; i < length; i++) {
+      for (int patternLength = min; patternLength <= max; patternLength++) {
+        final String pattern = sequence.substring(i, i + patternLength);
+        occurrencesAdder.increaseCount(patternToOccurrencesMapping.get(pattern));
+      }
+      updateProgress(progress++, totalProgress);
+    }
   }
 
   private List<ProtonavPair> getFilteredProtonavPairList() {
@@ -154,7 +172,7 @@ public class NewAnalyzer extends Task<AnalysisResults> {
         }
       }
     }
-    updateMessage("Done :)");
+    updateMessage("Finished :)");
     return protonavsFilteredByProbabilisticOccurrences;
   }
 
@@ -183,7 +201,7 @@ public class NewAnalyzer extends Task<AnalysisResults> {
   }
 
   private void computeOccurrencesAndCorrelations(String sequenceUnderTest,
-      OccurrencesAdder occurrencesAdder, CorrelationArrayGetter correlationsGetter) {
+      CorrelationArrayGetter correlationsGetter) {
 
     final int windowSize = analysisParameters.getWindowSize();
     final int padding = analysisParameters.getPadding();
@@ -196,7 +214,6 @@ public class NewAnalyzer extends Task<AnalysisResults> {
       final String searchArea = sequenceUnderTest.substring(i, i + windowSize);
       for (int length = min; length <= max; length++) {
         final String pattern = sequenceUnderTest.substring(i, i + length);
-        occurrencesAdder.increaseCount(patternToOccurrencesMapping.get(pattern));
         patternCounter.updateCorrelationArray(pattern, searchArea,
             correlationsGetter.getCorrelationArray(patternToCorrelationArraysMapping.get(pattern)));
       }
@@ -277,7 +294,7 @@ public class NewAnalyzer extends Task<AnalysisResults> {
     final ProtonavProbabilities palimentaryProbabilities = new ProtonavProbabilities(
         palimentaryLeftProbabilityBySingles, palimentaryRightProbabilityBySingles);
 
-    if(extractedPattern.length()>1){
+    if (extractedPattern.length() > 1) {
       setProbabilitiesByPairs(extractedPattern, extractedProtonavProbabilities);
       setProbabilitiesByPairs(palimentaryPattern, palimentaryProbabilities);
     }

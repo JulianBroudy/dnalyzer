@@ -13,14 +13,14 @@ public interface OccurrencesAdder {
 
   void increaseCount(Occurrences occurrences);
 
-  class LeftCountAdder implements OccurrencesAdder {
+  class LeftOccurrencesAdder implements OccurrencesAdder {
     @Override
     public void increaseCount(Occurrences occurrences) {
       occurrences.increaseLeftCountByOne();
     }
   }
 
-  class RightCountAdder implements OccurrencesAdder {
+  class RightOccurrencesAdder implements OccurrencesAdder {
     @Override
     public void increaseCount(Occurrences occurrences) {
       occurrences.increaseRightCountByOne();

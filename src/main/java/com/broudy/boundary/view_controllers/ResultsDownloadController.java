@@ -9,7 +9,9 @@ import com.broudy.entity.AnalysisParameters;
 import com.broudy.entity.AnalysisResults;
 import com.broudy.entity.CorrelationArrays;
 import com.broudy.entity.FileMetadata;
+import com.broudy.entity.Protonav;
 import com.broudy.entity.ProtonavPair;
+import com.broudy.entity.ProtonavProbabilities;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -131,6 +133,7 @@ public class ResultsDownloadController {
       }
       XSSFSheet firstSheet = workbook.getSheetAt(0);
       XSSFSheet secondSheet = workbook.getSheetAt(1);
+      XSSFSheet fourthSheet = workbook.getSheetAt(3);
 
       XSSFRow row = firstSheet.getRow(0);
       XSSFCell cell = row.getCell(1);
@@ -144,11 +147,10 @@ public class ResultsDownloadController {
       int firstSheetRowCount = 4, secondSheetRowCount = 1;
       final List<ProtonavPair> correlations = analysisResults.getProtonavPairs();
       correlations.sort((o1, o2) -> (int) (o1.getID() - o2.getID()));
-      // correlations.sort((o1, o2) -> o1.getExtractedProtonav().getPattern()
-      //     .compareToIgnoreCase(o2.getExtractedProtonav().getPattern()));
 
       writeCorrelations(correlations, firstSheet, firstSheetRowCount, secondSheet,
           secondSheetRowCount, parameters.getWindowSize() - 2);
+      writeOccurrences(fourthSheet, analysisResults.getFilteredProtonavPairs());
 
       row = firstSheet.getRow(3);
       cell = row.getCell(10);
@@ -179,6 +181,7 @@ public class ResultsDownloadController {
 
     }
   }
+
 
   private void writeCorrelations(List<ProtonavPair> correlations, XSSFSheet firstSheet,
       int firstSheetRowCount, XSSFSheet secondSheet, int secondSheetRowCount, int maxIndex) {
@@ -233,6 +236,52 @@ public class ResultsDownloadController {
       }
 
     }
+
+  }
+
+
+  private void writeOccurrences(XSSFSheet sheet, List<ProtonavPair> filteredProtonavPairs) {
+    final List<ProtonavPair> sortedPairs = filteredProtonavPairs;
+    sortedPairs.sort((o1, o2) -> (int) (o1.getID() - o2.getID()));
+
+    XSSFRow row;
+    int rowCount = 1;
+
+    for (ProtonavPair pair : sortedPairs) {
+      row = sheet.createRow(rowCount++);
+      writeOccurrences(row, pair.getID(), pair.getExtractedProtonav());
+      row = sheet.createRow(rowCount++);
+      writeOccurrences(row, pair.getID(), pair.getPalimentaryProtonav());
+    }
+  }
+
+  private void writeOccurrences(XSSFRow row, long ID, Protonav protonav) {
+
+    XSSFCell cell = row.createCell(0);
+    cell.setCellValue(ID);
+
+    cell = row.createCell(1);
+    cell.setCellValue(protonav.getPattern());
+
+    final ProtonavProbabilities resultingProbabilities = protonav.getResultingProbabilities();
+
+    cell = row.createCell(2);
+    cell.setCellValue(protonav.getOccurrences().getLeftCount());
+
+    cell = row.createCell(3);
+    cell.setCellValue(protonav.getOccurrences().getRightCount());
+
+    cell = row.createCell(4);
+    cell.setCellValue(resultingProbabilities.getLeftProbabilityBySingles());
+
+    cell = row.createCell(5);
+    cell.setCellValue(resultingProbabilities.getRightProbabilityBySingles());
+
+    cell = row.createCell(6);
+    cell.setCellValue(resultingProbabilities.getLeftProbabilityByPairs());
+
+    cell = row.createCell(7);
+    cell.setCellValue(resultingProbabilities.getRightProbabilityByPairs());
 
   }
 
