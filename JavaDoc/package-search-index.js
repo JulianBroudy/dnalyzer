@@ -1,1 +1,0 @@
-packageSearchIndex = [{"l":"All Packages","url":"allpackages-index.html"},{"m":"com.broudy","l":"com.broudy"},{"m":"com.broudy","l":"com.broudy.boundary"},{"m":"com.broudy","l":"com.broudy.boundary.view_controllers"},{"m":"com.broudy","l":"com.broudy.control"},{"m":"com.broudy","l":"com.broudy.entity"}]
