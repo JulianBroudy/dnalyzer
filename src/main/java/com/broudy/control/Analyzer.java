@@ -27,23 +27,23 @@ import javafx.concurrent.Task;
  */
 public class Analyzer extends Task<AnalysisResults> {
 
-  private final AnalysisInformation analysisInformation;
-  private final AnalysisParameters analysisParameters;
-  private final List<String> possiblePatterns;
-  private final List<ProtonavPair> protonavPairs;
-  private final HashMap<String, Protonav> patternToProtonavMapping;
-  private final HashMap<String, AutocorrelationArrays> patternToCorrelationArraysMapping;
-  private final HashMap<String, Occurrences> patternToOccurrencesMapping;
+  public final AnalysisInformation analysisInformation;
+  public final AnalysisParameters analysisParameters;
+  public final List<String> possiblePatterns;
+  public final List<ProtonavPair> protonavPairs;
+  public final HashMap<String, Protonav> patternToProtonavMapping;
+  public final HashMap<String, AutocorrelationArrays> patternToCorrelationArraysMapping;
+  public final HashMap<String, Occurrences> patternToOccurrencesMapping;
 
   private long progress, totalProgress;
 
 
-  private double[] probabilitiesOfSinglesOnLeft;
-  private double[] probabilitiesOfSinglesOnRight;
-  private HashMap<String, Double> probabilitiesByPairsOnLeft;
-  private HashMap<String, Double> probabilitiesByPairsOnRight;
-  private double totalNumberOfNucleotidesOnLeft;
-  private double totalNumberOfNucleotidesOnRight;
+  public double[] probabilitiesOfSinglesOnLeft;
+  public double[] probabilitiesOfSinglesOnRight;
+  public HashMap<String, Double> probabilitiesByPairsOnLeft;
+  public HashMap<String, Double> probabilitiesByPairsOnRight;
+  public double totalNumberOfNucleotidesOnLeft;
+  public double totalNumberOfNucleotidesOnRight;
 
 
   public Analyzer(AnalysisInformation analysisInformation) {
@@ -93,7 +93,7 @@ public class Analyzer extends Task<AnalysisResults> {
     return new AnalysisResults(analysisInformation, protonavPairs, getFilteredProtonavPairList());
   }
 
-  private void countOccurrences(String sequence, OccurrencesAdder occurrencesAdder) {
+  public void countOccurrences(String sequence, OccurrencesAdder occurrencesAdder) {
 
     final int min = analysisParameters.getMinPatternLength();
     final int max = analysisParameters.getMaxPatternLength();
@@ -180,7 +180,7 @@ public class Analyzer extends Task<AnalysisResults> {
    * Fills in the smoothedCorrelationsArrays based by averaging every 3 consecutive cells into the
    * smoothed one: smoothedArray[i] = (old[i-1] + old[i] + old[i+1]) / 3
    */
-  private void smoothCorrelationArrays(int windowSize) {
+  public void smoothCorrelationArrays(int windowSize) {
     int[] leftCorrelationArray, rightCorrelationArray;
     double[] leftSmoothedCorrelationArray, rightSmoothedCorrelationArray;
     final int len = windowSize - 1;
@@ -200,7 +200,7 @@ public class Analyzer extends Task<AnalysisResults> {
     }
   }
 
-  private void computeAutocorrelations(String sequenceUnderTest,
+  public void computeAutocorrelations(String sequenceUnderTest,
       CorrelationArrayGetter correlationsGetter) {
 
     final int windowSize = analysisParameters.getWindowSize();
@@ -222,7 +222,7 @@ public class Analyzer extends Task<AnalysisResults> {
 
   }
 
-  private void prepareProtonavPairs() {
+  public void prepareProtonavPairs() {
     updateMessage("Preparing possible protonav pairs...");
     final int min = analysisParameters.getMinPatternLength();
     final int max = analysisParameters.getMaxPatternLength();
@@ -264,7 +264,7 @@ public class Analyzer extends Task<AnalysisResults> {
 
   // HELPER METHODS:
 
-  private ProtonavPair generateProtonavPair(String extractedPattern, int ID, int windowSize) {
+  public ProtonavPair generateProtonavPair(String extractedPattern, int ID, int windowSize) {
 
     final StringBuilder palimentaryBuilder = new StringBuilder();
     final char[] patternCharArray = extractedPattern.toCharArray();
@@ -324,7 +324,7 @@ public class Analyzer extends Task<AnalysisResults> {
    *
    * @return A->T, T->A, C->G, G->C
    */
-  private char getComplementaryNucleotide(char nucleotide) {
+  public char getComplementaryNucleotide(char nucleotide) {
     switch (nucleotide) {
       case 'A':
         nucleotide = 'T';
@@ -377,7 +377,7 @@ public class Analyzer extends Task<AnalysisResults> {
   /**
    * Recursively store all permutations one by one.
    */
-  private void allLexicographicRecur(String str, char[] data, int last, int index) {
+  public void allLexicographicRecur(String str, char[] data, int last, int index) {
     int length = str.length();
 
     // One by one fix all characters at the given index
@@ -405,7 +405,7 @@ public class Analyzer extends Task<AnalysisResults> {
    * @param str is the string from which to generate patterns.
    * @param length is the length of each pattern.
    */
-  private void allLexicographic(String str, int length) {
+  public void allLexicographic(String str, int length) {
 
     // Create a temp array that will be used by
     // allLexicographicRecur()
