@@ -37,7 +37,7 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
- * TODO provide a summary to ResultsDownloadController class!!!!!
+ * Controller class for reports downloading screen.
  * <p>
  * Created on the 16th of January, 2021.
  *
@@ -121,7 +121,6 @@ public class ResultsDownloadController {
 
       XSSFWorkbook workbook = null;
       try {
-        // workbook = (XSSFWorkbook) XSSFWorkbookFactory.create(new File(resource.toURI()));
         workbook = new XSSFWorkbook(OPCPackage.open(new File(resource.toURI())));
 
       } catch (IOException e) {

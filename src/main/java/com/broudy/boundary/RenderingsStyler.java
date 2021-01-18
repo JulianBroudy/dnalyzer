@@ -8,7 +8,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 
 /**
- * TODO provide a summary to RenderingsStyler class!!!!!
+ * A class that provides functions for manipulating GUI.
  * <p>
  * Created on the 14th of September, 2020.
  *

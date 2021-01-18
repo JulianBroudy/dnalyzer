@@ -1,7 +1,7 @@
 package com.broudy.boundary;
 
 /**
- * TODO provide a summary to FXMLView class!!!!!
+ * Enum class to encapsulate all the FXML logic and centralize calls from StageManager.
  * <p>
  * Created on the 13th of September, 2020.
  *

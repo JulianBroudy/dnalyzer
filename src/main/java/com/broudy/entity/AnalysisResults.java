@@ -3,7 +3,7 @@ package com.broudy.entity;
 import java.util.List;
 
 /**
- * TODO provide a summary to AnalysisResults class!!!!!
+ * A class to encapsulate analysis results.
  * <p>
  * Created on the 16th of January, 2021.
  *

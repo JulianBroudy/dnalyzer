@@ -3,7 +3,7 @@ package com.broudy.control;
 import com.broudy.entity.Occurrences;
 
 /**
- * TODO provide a summary to OccurrencesAdder class!!!!!
+ * A command DP.
  * <p>
  * Created on the 16th of January, 2021.
  *

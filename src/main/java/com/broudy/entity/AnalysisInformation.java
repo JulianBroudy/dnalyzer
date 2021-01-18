@@ -1,9 +1,7 @@
 package com.broudy.entity;
 
-import java.util.List;
-
 /**
- * TODO provide a summary to ReadyForAnalysis class!!!!!
+ * A class that encapsulates all of the information needed for analysis.
  * <p>
  * Created on the 15th of January, 2021.
  *

@@ -16,6 +16,9 @@ import javafx.scene.control.TextField;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * Controller class for target selection screen.
+ */
 public class TargetSitesSelectionController {
 
   private static final Logger LOGGER = LogManager.getLogger(TargetSitesSelectionController.class);
@@ -45,8 +48,6 @@ public class TargetSitesSelectionController {
 
   @FXML
   private ComboBox<Integer> windowSizeCB;
-  // @FXML
-  // private TextField windowTF;
 
   @FXML
   private TextField paddingTF;
@@ -128,7 +129,6 @@ public class TargetSitesSelectionController {
           minPatternLenTF.getText().isEmpty() ? 1 : Integer.parseInt(minPatternLenTF.getText()),
           maxPatternLenTF.getText().isEmpty() ? 3 : Integer.parseInt(maxPatternLenTF.getText()),
           windowSizeCB.getValue(),
-          // windowTF.getText().isEmpty() ? 500 : Integer.parseInt(windowTF.getText()),
           paddingTF.getText().isEmpty() ? 100000 : Integer.parseInt(paddingTF.getText()));
       final ReadyForParsing readyForParsing = new ReadyForParsing(selectedFile, analysisParameters);
       filesManager.getReadyForParsing().add(readyForParsing);

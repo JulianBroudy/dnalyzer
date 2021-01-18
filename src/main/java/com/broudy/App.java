@@ -3,9 +3,6 @@ package com.broudy;
 import com.broudy.boundary.FXMLView;
 import com.broudy.control.StageManager;
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.Arrays;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -39,9 +36,6 @@ public class App extends Application {
     stageManager = StageManager.getStageManager();
     stageManager.setMinWindowSize(750, 500);
     stageManager.loadNewScene(FXMLView.MAIN_SCREEN);
-    // scene = new Scene(loadFXML("primary"));
-    // stage.setScene(scene);
-    // stage.show();
   }
 
 }

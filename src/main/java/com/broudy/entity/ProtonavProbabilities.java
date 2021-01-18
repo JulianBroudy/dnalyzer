@@ -1,7 +1,7 @@
 package com.broudy.entity;
 
 /**
- * TODO provide a summary to ProtonavProbabilities class!!!!!
+ * Encapsulate probabilities
  * <p>
  * Created on the 22nd of December, 2020.
  *

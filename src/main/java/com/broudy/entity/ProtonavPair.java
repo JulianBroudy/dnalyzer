@@ -11,30 +11,10 @@ import java.util.Objects;
  */
 public class ProtonavPair {
 
-  private static long PAIRS_COUNT = 0;
-
   private final long ID;
   private Protonav extractedProtonav;
   private Protonav palimentaryProtonav;
 
-  public ProtonavPair() {
-    this.ID = PAIRS_COUNT++;
-  }
-
-  /**
-   * Sets the PAIRS_COUNT.
-   *
-   * @param PAIRS_COUNT is the PAIRS_COUNT's new value.
-   */
-  public static void setPairsCount(long pairsCount) {
-    PAIRS_COUNT = pairsCount;
-  }
-
-  public ProtonavPair(Protonav extractedProtonav, Protonav palimentaryProtonav) {
-    this.extractedProtonav = extractedProtonav;
-    this.palimentaryProtonav = palimentaryProtonav;
-    this.ID = PAIRS_COUNT++;
-  }
   public ProtonavPair(long ID, Protonav extractedProtonav, Protonav palimentaryProtonav) {
     this.extractedProtonav = extractedProtonav;
     this.palimentaryProtonav = palimentaryProtonav;

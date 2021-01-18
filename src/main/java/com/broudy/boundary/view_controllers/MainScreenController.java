@@ -4,9 +4,7 @@ import com.broudy.boundary.FXMLView;
 import com.broudy.boundary.RenderingsStyler;
 import com.broudy.control.FilesManager;
 import com.broudy.control.StageManager;
-import com.broudy.entity.AnalysisParameters;
 import java.io.File;
-import java.util.HashMap;
 import java.util.List;
 import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
@@ -19,6 +17,9 @@ import javafx.stage.FileChooser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * Controller class for the first screen.
+ */
 public class MainScreenController {
 
   private static final Logger LOGGER = LogManager.getLogger(MainScreenController.class);
@@ -78,28 +79,10 @@ public class MainScreenController {
     uploadedLV.setCellFactory(RenderingsStyler::callUploadedLV);
     selectedLV.setCellFactory(RenderingsStyler::callUploadedLV);
 
-    // uploadedLV.setCellFactory(file-> new ListCell<>(){
-    //         @Override
-    //         protected void updateItem(File item, boolean empty) {
-    //           super.updateItem(item, empty);
-    //           setText(empty ? "" : item.getName());
-    //         }
-    // });
-    // uploadedLV.setCellFactory(new Callback<>() {
-    //   @Override
-    //   public ListCell<File> call(ListView<File> file) {
-    //     return new ListCell<>() {
-    //       @Override
-    //       protected void updateItem(File item, boolean empty) {
-    //         super.updateItem(item, empty);
-    //         setText(empty ? "" : item.getName());
-    //       }
-    //     };
-    //   }
-    // });
     initializeBindings();
     initializeEventHandlers();
-    // initializeEventListeners();
+
+    toggleDBConnectionBTN.setDisable(true);
 
   }
 
@@ -162,7 +145,7 @@ public class MainScreenController {
 
   private void moveSelectedFileFromTo(ListView<File> from, ListView<File> to) {
     final File selectedFile = from.getSelectionModel().getSelectedItem();
-    if(selectedFile!=null) {
+    if (selectedFile != null) {
       to.getItems().add(selectedFile);
       from.getItems().remove(selectedFile);
     }

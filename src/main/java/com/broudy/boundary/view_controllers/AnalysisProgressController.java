@@ -29,7 +29,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * TODO provide a summary to AnalysisProgressController class!!!!!
+ * Controller class for the analysis screen.
  * <p>
  * Created on the 24th of November, 2020.
  *

@@ -12,7 +12,7 @@ import java.util.HashMap;
  */
 public class ProbabilitiesPerSequence {
 
-  private long totalNumberOfNucleotides;
+  private final long totalNumberOfNucleotides;
   private long totalNumberOfPairs;
   private double[] probabilitiesOfSingles;
   private HashMap<String, Double> probabilitiesOfPairs;

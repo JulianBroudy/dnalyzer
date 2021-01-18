@@ -19,7 +19,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * TODO provide a summary to FileParser class!!!!!
+ * A class for parsing uploaded DNA files.
  * <p>
  * Created on the 16th of January, 2021.
  *

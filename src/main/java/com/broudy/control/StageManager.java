@@ -14,7 +14,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * TODO provide a summary to StageManager class!!!!!
+ * A singleton class to allow seamless screen switching.
  * <p>
  * Created on the 31th of March, 2020.
  *

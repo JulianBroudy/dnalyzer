@@ -1,7 +1,7 @@
 package com.broudy.entity;
 
 /**
- * TODO provide a summary to OccurrenceCount class!!!!!
+ * Encapsulating occurrences for keeping OOP design intact.
  * <p>
  * Created on the 25th of November, 2020.
  *

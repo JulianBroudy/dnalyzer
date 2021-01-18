@@ -12,7 +12,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * TODO provide a summary to FilesManager class!!!!!
+ * Repository class to centralize all files and keep them synced over different screens.
  * <p>
  * Created on the 14th of September, 2020.
  *

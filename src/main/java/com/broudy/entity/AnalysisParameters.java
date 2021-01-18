@@ -1,7 +1,7 @@
 package com.broudy.entity;
 
 /**
- * TODO provide a summary to AnalysisParameters class!!!!!
+ * A class for encapsulating all of the inputted parameters for an analysis.
  * <p>
  * Created on the 15th of January, 2021.
  *

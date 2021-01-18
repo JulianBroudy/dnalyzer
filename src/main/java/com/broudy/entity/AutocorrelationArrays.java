@@ -1,7 +1,7 @@
 package com.broudy.entity;
 
 /**
- * TODO provide a summary to CorrelationArrays class!!!!!
+ * A class to encapsulate autocorrelation arrays.
  * <p>
  * Created on the 31th of December, 2020.
  *
@@ -16,13 +16,9 @@ public class AutocorrelationArrays {
 
   public AutocorrelationArrays(int windowSize) {
     this.correlationsOnLeft = new int[windowSize];
-    this.correlationsOnRight= new int[windowSize];
-    this.smoothedCorrelationsOnLeft = new double[windowSize-1];
-    this.smoothedCorrelationsOnRight = new double[windowSize-1];
-    // this.correlationsOnLeft = new int[100];
-    // this.correlationsOnRight= new int[100];
-    // this.smoothedCorrelationsOnLeft = new double[99];
-    // this.smoothedCorrelationsOnRight = new double[99];
+    this.correlationsOnRight = new int[windowSize];
+    this.smoothedCorrelationsOnLeft = new double[windowSize - 1];
+    this.smoothedCorrelationsOnRight = new double[windowSize - 1];
   }
 
   /**
@@ -61,12 +57,5 @@ public class AutocorrelationArrays {
     return smoothedCorrelationsOnRight;
   }
 
-  public void increaseCorrelationsOnLeftAt(int index){
-    correlationsOnLeft[index]++;
-  }
-
-  public void increaseCorrelationsOnRightAt(int index){
-    correlationsOnRight[index]++;
-  }
 
 }

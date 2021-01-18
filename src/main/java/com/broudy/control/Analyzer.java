@@ -19,7 +19,7 @@ import java.util.List;
 import javafx.concurrent.Task;
 
 /**
- * TODO provide a summary to NewAnalyzer class!!!!!
+ * This class controls the analysis flow.
  * <p>
  * Created on the 16th of January, 2021.
  *
